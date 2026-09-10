@@ -1,0 +1,285 @@
+import sys
+import os
+import psutil
+import wmi
+import ctypes
+from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QFrame, QMessageBox, QSystemTrayIcon, QMenu, QAction, QStyle, QDialog, QSlider, QPushButton, QColorDialog, QFormLayout
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QColor
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+try:
+    import pynvml
+    pynvml.nvmlInit()
+    nvml_available = True
+except Exception:
+    nvml_available = False
+
+try:
+    from pyadl import ADLManager
+    adl_devices = ADLManager.getInstance().getDevices()
+    adl_available = len(adl_devices) > 0
+except Exception:
+    adl_available = False
+
+def get_cpu_temp(w):
+    if not w:
+        return "N/A"
+    try:
+        temperature_info = w.MSAcpi_ThermalZoneTemperature()
+        if temperature_info:
+            temp_k = temperature_info[0].CurrentTemperature
+            return round((temp_k / 10.0) - 273.15, 1)
+    except Exception:
+        pass
+    return "N/A"
+
+class ConfigWindow(QDialog):
+    def __init__(self, main_app):
+        super().__init__()
+        self.main_app = main_app
+        self.initUI()
+        
+    def initUI(self):
+        self.setWindowTitle("ตั้งค่า (Config)")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.Tool)
+        self.resize(300, 120)
+        
+        layout = QFormLayout()
+        
+        self.btn_bg_color = QPushButton("เลือกสีพื้นหลัง (Background Color)")
+        self.btn_bg_color.clicked.connect(self.choose_bg_color)
+        layout.addRow(self.btn_bg_color)
+        
+        self.btn_text_color = QPushButton("เลือกสีข้อความ (Text Color)")
+        self.btn_text_color.clicked.connect(self.choose_text_color)
+        layout.addRow(self.btn_text_color)
+        
+        self.slider_opacity = QSlider(Qt.Horizontal)
+        self.slider_opacity.setRange(0, 255)
+        self.slider_opacity.setValue(self.main_app.bg_alpha)
+        self.slider_opacity.valueChanged.connect(self.change_opacity)
+        
+        layout.addRow("ความทึบ (Opacity):", self.slider_opacity)
+        
+        self.setLayout(layout)
+        
+    def choose_bg_color(self):
+        self.hide() # ซ่อนหน้าตั้งค่าชั่วคราว
+        initial_color = QColor(self.main_app.bg_r, self.main_app.bg_g, self.main_app.bg_b)
+        color = QColorDialog.getColor(initial_color, None, "เลือกสีพื้นหลัง")
+        if color.isValid():
+            self.main_app.bg_r = color.red()
+            self.main_app.bg_g = color.green()
+            self.main_app.bg_b = color.blue()
+            self.main_app.apply_style()
+        self.showNormal() # แสดงกลับมาเมื่อเลือกเสร็จ
+            
+    def choose_text_color(self):
+        self.hide() # ซ่อนหน้าตั้งค่าชั่วคราว
+        initial_color = QColor(self.main_app.text_color)
+        color = QColorDialog.getColor(initial_color, None, "เลือกสีข้อความ")
+        if color.isValid():
+            self.main_app.text_color = color.name()
+            self.main_app.apply_style()
+        self.showNormal() # แสดงกลับมาเมื่อเลือกเสร็จ
+            
+    def change_opacity(self, value):
+        self.main_app.bg_alpha = value
+        self.main_app.apply_style()
+
+class MonitorApp(QWidget):
+    def __init__(self, w, admin_status=""):
+        super().__init__()
+        self.w = w
+        self.admin_status = admin_status
+        self.bg_r = 0
+        self.bg_g = 0
+        self.bg_b = 0
+        self.bg_alpha = 150
+        self.text_color = "#00ffcc"
+        
+        self.initUI()
+        self.config_window = ConfigWindow(self)
+        self.config_window.show()
+        
+    def apply_style(self):
+        if hasattr(self, 'container'):
+            self.container.setStyleSheet(f"#MainContainer {{ background-color: rgba({self.bg_r}, {self.bg_g}, {self.bg_b}, {self.bg_alpha}); border-radius: 10px; }}")
+            
+        if hasattr(self, 'lbl_cpu'):
+            label_style = f"background-color: transparent; color: {self.text_color}; font-family: Consolas; font-size: 10pt; font-weight: bold;"
+            self.lbl_cpu.setStyleSheet(label_style)
+            self.lbl_gpu.setStyleSheet(label_style)
+            self.lbl_ram.setStyleSheet(label_style)
+            self.lbl_ssd.setStyleSheet(label_style)
+        
+    def initUI(self):
+        self.setWindowTitle("solomon monitor")
+        
+        # Frameless and Always on Top
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.Tool | Qt.FramelessWindowHint)
+        
+        # Transparent background
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        
+        # Container with very faint black background (almost invisible)
+        self.container = QFrame(self)
+        self.container.setObjectName("MainContainer")
+        self.apply_style()
+        
+        layout = QVBoxLayout(self.container)
+        
+        self.lbl_cpu = QLabel("CPU: Loading...")
+        self.lbl_gpu = QLabel("GPU: Loading...")
+        self.lbl_ram = QLabel("RAM: Loading...")
+        self.lbl_ssd = QLabel("SSD: Loading...")
+        
+        self.apply_style()
+        
+        layout.addWidget(self.lbl_cpu)
+        layout.addWidget(self.lbl_gpu)
+        layout.addWidget(self.lbl_ram)
+        layout.addWidget(self.lbl_ssd)
+        
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(self.container)
+        
+        self.resize(220, 110)
+        self.oldPos = self.pos()
+        
+        # --- System Tray Icon Setup ---
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
+        self.tray_icon.setToolTip("Solomon PC Monitor")
+        
+        tray_menu = QMenu()
+        show_action = QAction("แสดงหน้าจอ (Show)", self)
+        show_action.triggered.connect(self.showNormal)
+        
+        hide_action = QAction("ซ่อนหน้าจอ (Hide)", self)
+        hide_action.triggered.connect(self.hide)
+        
+        config_action = QAction("ตั้งค่า (Config)", self)
+        config_action.triggered.connect(lambda: self.config_window.showNormal())
+        
+        quit_action = QAction("ปิดโปรแกรม (Exit)", self)
+        quit_action.triggered.connect(QApplication.instance().quit)
+        
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(hide_action)
+        tray_menu.addAction(config_action)
+        tray_menu.addSeparator()
+        tray_menu.addAction(quit_action)
+        
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
+        
+        psutil.cpu_percent(interval=None)
+        
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_stats)
+        self.timer.start(1000)
+
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        delta = event.globalPos() - self.oldPos
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
+
+    def mouseDoubleClickEvent(self, event):
+        # Double click to close
+        QApplication.instance().quit()
+        
+    def update_stats(self):
+        try:
+            cpu_usage = psutil.cpu_percent(interval=None)
+            
+            ram = psutil.virtual_memory()
+            ram_usage = ram.percent
+            
+            ssd = psutil.disk_usage('C:\\')
+            ssd_usage = ssd.percent
+            
+            gpu_usage = "N/A"
+            gpu_temp = "N/A"
+            if nvml_available:
+                try:
+                    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                    util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+                    gpu_usage = util.gpu
+                    gpu_temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+                except Exception:
+                    pass
+            elif adl_available:
+                try:
+                    dev = adl_devices[0]
+                    gpu_usage = dev.getCurrentUsage()
+                    try:
+                        gpu_temp = dev.getCurrentTemperature()
+                    except:
+                        pass
+                except Exception:
+                    pass
+            
+            cpu_temp_val = get_cpu_temp(self.w)
+            cpu_temp = f"{cpu_temp_val}°C" if cpu_temp_val != "N/A" else f"N/A{self.admin_status}"
+            
+            self.lbl_cpu.setText(f"CPU: {cpu_usage}% | Temp: {cpu_temp}")
+            self.lbl_gpu.setText(f"GPU: {gpu_usage}% | Temp: {gpu_temp}°C")
+            self.lbl_ram.setText(f"RAM: {ram_usage}%")
+            self.lbl_ssd.setText(f"SSD: {ssd_usage}%")
+            
+        except Exception as e:
+            print("Error updating stats:", e)
+
+def log_msg(msg_text):
+    with open(r"D:\SuperAI\DATA\Note1\01_Projects\PC_Monitor_App\app.log", "a", encoding="utf-8") as f:
+        f.write(msg_text + "\n")
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    import traceback
+    err_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    log_msg("CRASH:\n" + err_msg)
+    sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+sys.excepthook = handle_exception
+
+def main():
+    log_msg("=== App Starting ===")
+    app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
+    
+    if not is_admin():
+        pythonw_path = r"C:\Users\nong6\AppData\Local\Programs\Python\Python310\pythonw.exe"
+        script_path = os.path.abspath(sys.argv[0])
+        log_msg(f"Not admin. Requesting UAC for: {pythonw_path} {script_path}")
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", pythonw_path, f'"{script_path}"', None, 1)
+        sys.exit()
+    
+    log_msg("Running as admin. Initializing WMI...")
+    admin_status = "[Admin]"
+    try:
+        w = wmi.WMI(namespace="root\\wmi")
+        log_msg("WMI initialized successfully.")
+    except Exception as e:
+        w = None
+        log_msg(f"WMI Error: {e}")
+        admin_status = "[WMI Error]"
+        
+    log_msg("Creating MonitorApp...")
+    ex = MonitorApp(w, admin_status)
+    ex.show()
+    log_msg("MonitorApp shown. Entering event loop.")
+    sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()

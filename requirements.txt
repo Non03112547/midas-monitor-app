@@ -1,0 +1,6 @@
+psutil
+wmi
+pypiwin32
+nvidia-ml-py
+PyQt5
+pyadl

@@ -1,0 +1,1 @@
+{"pos_x": 0, "pos_y": 4, "bg_r": 0, "bg_g": 0, "bg_b": 0, "bg_alpha": 38, "text_color": "#00ffcc", "outline_color": "#000000", "has_outline": true, "show_cpu": true, "show_gpu": true, "show_ram": true, "show_disk": true, "show_net": true, "show_ping": true, "autostart": false, "language": "th"}
