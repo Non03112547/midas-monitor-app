@@ -1,5 +1,13 @@
 import sys
 import os
+
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, 'w')
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, 'w')
+if sys.stdin is None:
+    sys.stdin = open(os.devnull, 'r')
+
 import psutil
 import wmi
 import ctypes
@@ -672,7 +680,7 @@ class MonitorApp(QWidget):
         if self.layout_direction == "horizontal":
             layout = QHBoxLayout(self.container)
         else:
-            
+            layout = QVBoxLayout(self.container)
             
         for lbl in self.labels:
             layout.addWidget(lbl)
@@ -737,7 +745,7 @@ class MonitorApp(QWidget):
         self.tray_icon.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
         self.tray_icon.setToolTip("MD Monitor")
         
-        tray_menu = QMenu()
+        self.tray_menu = QMenu(self)
         self.show_action = QAction("แสดงหน้าจอ (Show)", self)
         self.show_action.triggered.connect(self.showNormal)
         
@@ -750,13 +758,13 @@ class MonitorApp(QWidget):
         self.quit_action = QAction("ปิดโปรแกรม (Exit)", self)
         self.quit_action.triggered.connect(QApplication.instance().quit)
         
-        tray_menu.addAction(self.show_action)
-        tray_menu.addAction(self.hide_action)
-        tray_menu.addAction(self.config_action)
-        tray_menu.addSeparator()
-        tray_menu.addAction(self.quit_action)
+        self.tray_menu.addAction(self.show_action)
+        self.tray_menu.addAction(self.hide_action)
+        self.tray_menu.addAction(self.config_action)
+        self.tray_menu.addSeparator()
+        self.tray_menu.addAction(self.quit_action)
         
-        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.setContextMenu(self.tray_menu)
         self.tray_icon.show()
         
         QTimer.singleShot(100, self.update_texts)
@@ -897,10 +905,10 @@ def main():
     app.setQuitOnLastWindowClosed(False)
     
     if not is_admin():
-        pythonw_path = r"C:\Users\nong6\AppData\Local\Programs\Python\Python310\pythonw.exe"
+        python_path = r"C:\Users\nong6\AppData\Local\Programs\Python\Python310\python.exe"
         script_path = os.path.abspath(sys.argv[0])
-        log_msg(f"Not admin. Requesting UAC for: {pythonw_path} {script_path}")
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", pythonw_path, f'"{script_path}"', None, 1)
+        log_msg(f"Not admin. Requesting UAC for: {python_path} {script_path}")
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", python_path, f'"{script_path}"', None, 0)
         sys.exit()
     
     log_msg("Running as admin. Initializing WMI...")
