@@ -215,6 +215,14 @@ class ConfigWindow(QDialog):
         self.slider_opacity.setValue(self.main_app.bg_alpha)
         self.slider_opacity.valueChanged.connect(self.change_opacity)
         layout.addRow(self.lbl_opacity, self.slider_opacity)
+        # Font size slider
+        self.lbl_font_size = QLabel()
+        self.slider_font_size = QSlider(Qt.Horizontal)
+        self.slider_font_size.setRange(6, 48)
+        self.slider_font_size.setValue(self.main_app.font_size)
+        self.slider_font_size.valueChanged.connect(self.change_font_size)
+        layout.addRow(self.lbl_font_size, self.slider_font_size)
+
         
         # Toggles
         self.chk_outline = QCheckBox()
@@ -252,6 +260,20 @@ class ConfigWindow(QDialog):
         self.chk_ping.stateChanged.connect(self.toggle_ping)
         layout.addRow(self.chk_ping)
         
+        self.chk_fps = QCheckBox()
+        self.chk_fps.setChecked(self.main_app.show_fps)
+        self.chk_fps.stateChanged.connect(self.toggle_fps)
+        layout.addRow(self.chk_fps)
+        
+        from PyQt5.QtWidgets import QComboBox
+        self.combo_layout = QComboBox()
+        self.combo_layout.addItems(["Vertical (แนวตั้ง)", "Horizontal (แนวนอน)"])
+        if self.main_app.layout_direction == "horizontal":
+            self.combo_layout.setCurrentIndex(1)
+        self.combo_layout.currentIndexChanged.connect(self.change_layout_direction)
+        layout.addRow("Layout:", self.combo_layout)
+
+        
         self.chk_autostart = QCheckBox()
         self.chk_autostart.setChecked(self.main_app.autostart)
         self.chk_autostart.stateChanged.connect(self.toggle_autostart)
@@ -279,7 +301,8 @@ class ConfigWindow(QDialog):
             self.btn_bg_color.setText("Choose Background Color")
             self.btn_text_color.setText("Choose Text Color")
             self.btn_outline_color.setText("Choose Outline Color")
-            self.lbl_opacity.setText("Background Opacity:")
+            self.lbl_opacity.setText(f"Background Opacity ({self.slider_opacity.value()}):")
+            self.lbl_font_size.setText(f"Font Size ({self.slider_font_size.value()}):")
             self.chk_outline.setText("Enable Text Outline")
             self.chk_cpu.setText("Show CPU")
             self.chk_gpu.setText("Show GPU")
@@ -287,6 +310,7 @@ class ConfigWindow(QDialog):
             self.chk_disk.setText("Show DISK (All Drives)")
             self.chk_net.setText("Show Network")
             self.chk_ping.setText("Show Ping (Latency)")
+            self.chk_fps.setText("Show FPS")
             self.chk_autostart.setText("Run on Startup (Auto-Start)")
             self.btn_reset.setText("Reset to Defaults")
         else:
@@ -296,7 +320,8 @@ class ConfigWindow(QDialog):
             self.btn_bg_color.setText("เลือกสีพื้นหลัง (BG Color)")
             self.btn_text_color.setText("เลือกสีข้อความ (Text Color)")
             self.btn_outline_color.setText("เลือกสีขอบข้อความ (Outline Color)")
-            self.lbl_opacity.setText("ความทึบพื้นหลัง:")
+            self.lbl_opacity.setText(f"ความทึบพื้นหลัง ({self.slider_opacity.value()}):")
+            self.lbl_font_size.setText(f"ขนาดตัวอักษร ({self.slider_font_size.value()}):")
             self.chk_outline.setText("เปิดใช้งานขอบข้อความ (Text Outline)")
             self.chk_cpu.setText("แสดง CPU")
             self.chk_gpu.setText("แสดง GPU")
@@ -304,6 +329,7 @@ class ConfigWindow(QDialog):
             self.chk_disk.setText("แสดง DISK (ทุกไดรฟ์)")
             self.chk_net.setText("แสดง Network")
             self.chk_ping.setText("แสดง Ping (Latency)")
+            self.chk_fps.setText("แสดง FPS")
             self.chk_autostart.setText("เปิดโปรแกรมตอนเปิดเครื่อง (Auto-Start)")
             self.btn_reset.setText("คืนค่าเริ่มต้น (Reset to Defaults)")
         
@@ -345,7 +371,15 @@ class ConfigWindow(QDialog):
             
     def change_opacity(self, value):
         self.main_app.bg_alpha = value
+        self.update_texts()
         self.main_app.apply_style()
+        self.main_app.save_config()
+        
+    def change_font_size(self, value):
+        self.main_app.font_size = value
+        self.update_texts()
+        self.main_app.apply_style()
+        self.main_app.adjust_size()
         self.main_app.save_config()
         
     def toggle_outline(self, state):
@@ -389,6 +423,18 @@ class ConfigWindow(QDialog):
         self.main_app.adjust_size()
         self.main_app.save_config()
         
+    def toggle_fps(self, state):
+        self.main_app.show_fps = (state == Qt.Checked)
+        self.main_app.lbl_fps.setVisible(self.main_app.show_fps)
+        self.main_app.adjust_size()
+        self.main_app.save_config()
+        
+    def change_layout_direction(self, index):
+        self.main_app.layout_direction = "horizontal" if index == 1 else "vertical"
+        self.main_app.rebuild_layout()
+        self.main_app.save_config()
+
+        
     def toggle_autostart(self, state):
         self.main_app.autostart = (state == Qt.Checked)
         self.main_app.apply_autostart()
@@ -403,6 +449,7 @@ class ConfigWindow(QDialog):
         self.main_app.bg_g = 0
         self.main_app.bg_b = 0
         self.main_app.bg_alpha = 150
+        self.main_app.font_size = 10
         
         self.main_app.text_color = QColor("#00ffcc")
         self.main_app.outline_color = QColor("black")
@@ -414,11 +461,15 @@ class ConfigWindow(QDialog):
         self.main_app.show_disk = True
         self.main_app.show_net = True
         self.main_app.show_ping = True
-        
+        self.main_app.show_fps = False
+        self.main_app.layout_direction = "vertical"
+        self.combo_layout.setCurrentIndex(0)
+        self.main_app.rebuild_layout()
         self.main_app.autostart = False
         self.main_app.apply_autostart()
         
         self.slider_opacity.blockSignals(True)
+        self.slider_font_size.blockSignals(True)
         self.chk_outline.blockSignals(True)
         self.chk_cpu.blockSignals(True)
         self.chk_gpu.blockSignals(True)
@@ -426,9 +477,11 @@ class ConfigWindow(QDialog):
         self.chk_disk.blockSignals(True)
         self.chk_net.blockSignals(True)
         self.chk_ping.blockSignals(True)
+        self.chk_fps.blockSignals(True)
         self.chk_autostart.blockSignals(True)
         
         self.slider_opacity.setValue(150)
+        self.slider_font_size.setValue(10)
         self.chk_outline.setChecked(False)
         self.chk_cpu.setChecked(True)
         self.chk_gpu.setChecked(True)
@@ -436,9 +489,11 @@ class ConfigWindow(QDialog):
         self.chk_disk.setChecked(True)
         self.chk_net.setChecked(True)
         self.chk_ping.setChecked(True)
+        self.chk_fps.setChecked(False)
         self.chk_autostart.setChecked(False)
         
         self.slider_opacity.blockSignals(False)
+        self.slider_font_size.blockSignals(False)
         self.chk_outline.blockSignals(False)
         self.chk_cpu.blockSignals(False)
         self.chk_gpu.blockSignals(False)
@@ -446,6 +501,7 @@ class ConfigWindow(QDialog):
         self.chk_disk.blockSignals(False)
         self.chk_net.blockSignals(False)
         self.chk_ping.blockSignals(False)
+        self.chk_fps.blockSignals(False)
         self.chk_autostart.blockSignals(False)
         
         self.main_app.lbl_cpu.setVisible(True)
@@ -454,6 +510,7 @@ class ConfigWindow(QDialog):
         self.main_app.lbl_disk.setVisible(True)
         self.main_app.lbl_net.setVisible(True)
         self.main_app.lbl_ping.setVisible(True)
+        self.main_app.lbl_fps.setVisible(False)
         
         self.main_app.apply_style()
         self.main_app.adjust_size()
@@ -474,6 +531,7 @@ class MonitorApp(QWidget):
         self.bg_g = 0
         self.bg_b = 0
         self.bg_alpha = 150
+        self.font_size = 10
         
         self.text_color = QColor("#00ffcc")
         self.outline_color = QColor("black")
@@ -485,6 +543,8 @@ class MonitorApp(QWidget):
         self.show_disk = True
         self.show_net = True
         self.show_ping = True
+        self.show_fps = False
+        self.layout_direction = "vertical"
         self.autostart = False
         
         self.load_config()
@@ -510,6 +570,7 @@ class MonitorApp(QWidget):
                 self.bg_g = data.get("bg_g", self.bg_g)
                 self.bg_b = data.get("bg_b", self.bg_b)
                 self.bg_alpha = data.get("bg_alpha", self.bg_alpha)
+                self.font_size = data.get("font_size", self.font_size)
                 
                 self.text_color = QColor(data.get("text_color", self.text_color.name()))
                 self.outline_color = QColor(data.get("outline_color", self.outline_color.name()))
@@ -521,6 +582,8 @@ class MonitorApp(QWidget):
                 self.show_disk = data.get("show_disk", data.get("show_ssd", self.show_disk))
                 self.show_net = data.get("show_net", self.show_net)
                 self.show_ping = data.get("show_ping", self.show_ping)
+                self.show_fps = data.get("show_fps", self.show_fps)
+                self.layout_direction = data.get("layout_direction", self.layout_direction)
                 self.autostart = data.get("autostart", self.autostart)
                 self.language = data.get("language", self.language)
         except Exception:
@@ -535,6 +598,7 @@ class MonitorApp(QWidget):
                 "bg_g": self.bg_g,
                 "bg_b": self.bg_b,
                 "bg_alpha": self.bg_alpha,
+                "font_size": self.font_size,
                 "text_color": self.text_color.name(),
                 "outline_color": self.outline_color.name(),
                 "has_outline": self.has_outline,
@@ -544,6 +608,8 @@ class MonitorApp(QWidget):
                 "show_disk": self.show_disk,
                 "show_net": self.show_net,
                 "show_ping": self.show_ping,
+                "show_fps": self.show_fps,
+                "layout_direction": self.layout_direction,
                 "autostart": self.autostart,
                 "language": self.language
             }
@@ -588,10 +654,33 @@ class MonitorApp(QWidget):
             lbl.has_outline = self.has_outline
             # transparent background for the label itself
             lbl.setStyleSheet("background-color: transparent;")
-            lbl.setFont(QFont("Consolas", 10, QFont.Bold))
+            lbl.setFont(QFont("Consolas", self.font_size, QFont.Bold))
             lbl.update()
             
+
+    def rebuild_layout(self):
+        from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
+        if self.container.layout() is not None:
+            old_layout = self.container.layout()
+            while old_layout.count():
+                item = old_layout.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.setParent(None)
+            QWidget().setLayout(old_layout) # delete old layout
+            
+        if self.layout_direction == "horizontal":
+            layout = QHBoxLayout(self.container)
+        else:
+            
+            
+        for lbl in self.labels:
+            layout.addWidget(lbl)
+            
+        self.adjust_size()
+
     def adjust_size(self):
+
         self.resize(self.minimumSizeHint())
         
     def initUI(self):
@@ -604,7 +693,7 @@ class MonitorApp(QWidget):
         self.container = QFrame(self)
         self.container.setObjectName("MainContainer")
         
-        layout = QVBoxLayout(self.container)
+        
         
         self.lbl_cpu = OutlineLabel("CPU: Loading...")
         self.lbl_cpu.setVisible(self.show_cpu)
@@ -624,12 +713,14 @@ class MonitorApp(QWidget):
         self.lbl_ping = OutlineLabel("Ping: Loading...")
         self.lbl_ping.setVisible(self.show_ping)
         
-        self.labels = [self.lbl_cpu, self.lbl_gpu, self.lbl_ram, self.lbl_disk, self.lbl_net, self.lbl_ping]
+        self.lbl_fps = OutlineLabel("FPS: N/A")
+        self.lbl_fps.setVisible(self.show_fps)
+        
+        self.labels = [self.lbl_cpu, self.lbl_gpu, self.lbl_ram, self.lbl_disk, self.lbl_net, self.lbl_ping, self.lbl_fps]
         
         self.apply_style()
         
-        for lbl in self.labels:
-            layout.addWidget(lbl)
+        self.rebuild_layout()
             
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -739,12 +830,17 @@ class MonitorApp(QWidget):
             if self.show_gpu:
                 gpu_usage = "N/A"
                 gpu_temp = "N/A"
+                gpu_fan = "N/A"
                 if nvml_available:
                     try:
                         handle = pynvml.nvmlDeviceGetHandleByIndex(0)
                         util = pynvml.nvmlDeviceGetUtilizationRates(handle)
                         gpu_usage = util.gpu
                         gpu_temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+                        try:
+                            gpu_fan = pynvml.nvmlDeviceGetFanSpeed(handle)
+                        except:
+                            pass
                     except Exception:
                         pass
                 elif adl_available:
@@ -753,11 +849,14 @@ class MonitorApp(QWidget):
                         gpu_usage = dev.getCurrentUsage()
                         try:
                             gpu_temp = dev.getCurrentTemperature()
+                            gpu_fan = dev.getCurrentFanSpeed()
                         except:
                             pass
                     except Exception:
                         pass
-                self.lbl_gpu.setText(f"GPU: {gpu_usage}% | Temp: {gpu_temp}°C")
+                
+                fan_str = f" | Fan: {gpu_fan}%" if gpu_fan != "N/A" else ""
+                self.lbl_gpu.setText(f"GPU: {gpu_usage}% | Temp: {gpu_temp}°C{fan_str}")
                 
             if self.show_net:
                 net_io = psutil.net_io_counters()
