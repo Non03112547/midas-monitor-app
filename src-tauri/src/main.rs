@@ -114,45 +114,56 @@ fn close_config_window(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(windows)]
-fn ensure_single_instance() {
-    extern "system" {
-        fn CreateMutexW(lpMutexAttributes: *const std::ffi::c_void, bInitialOwner: i32, lpName: *const u16) -> *mut std::ffi::c_void;
-        fn GetLastError() -> u32;
-        fn FindWindowW(lpClassName: *const u16, lpWindowName: *const u16) -> isize;
-        fn ShowWindow(hWnd: isize, nCmdShow: i32) -> i32;
-        fn SetForegroundWindow(hWnd: isize) -> i32;
-    }
-
-    let mutex_name: Vec<u16> = "Global\\com_mdmonitor_dev_single_instance\0".encode_utf16().collect();
-    unsafe {
-        let _ = CreateMutexW(std::ptr::null(), 1, mutex_name.as_ptr());
-        if GetLastError() == 183 { // ERROR_ALREADY_EXISTS = 183
-            let config_title: Vec<u16> = "ตั้งค่า\0".encode_utf16().collect();
-            let hwnd_config = FindWindowW(std::ptr::null(), config_title.as_ptr());
-            if hwnd_config != 0 {
-                ShowWindow(hwnd_config, 9); // SW_RESTORE = 9
-                ShowWindow(hwnd_config, 5); // SW_SHOW = 5
-                SetForegroundWindow(hwnd_config);
+fn ensure_single_instance_or_exit() -> std::net::TcpListener {
+    match std::net::TcpListener::bind("127.0.0.1:45678") {
+        Ok(listener) => {
+            let _ = listener.set_nonblocking(true);
+            listener
+        }
+        Err(_) => {
+            // Already running! Signal the primary instance to show windows
+            if let Ok(mut stream) = std::net::TcpStream::connect("127.0.0.1:45678") {
+                use std::io::Write;
+                let _ = stream.write_all(b"show\n");
             }
-
-            let main_title: Vec<u16> = "MD Monitor\0".encode_utf16().collect();
-            let hwnd_main = FindWindowW(std::ptr::null(), main_title.as_ptr());
-            if hwnd_main != 0 {
-                ShowWindow(hwnd_main, 5); // SW_SHOW = 5
-            }
-
             std::process::exit(0);
         }
     }
 }
 
 fn main() {
-    #[cfg(windows)]
-    ensure_single_instance();
+    let single_instance_listener = ensure_single_instance_or_exit();
 
     tauri::Builder::default()
-        .setup(|app| {
+        .setup(move |app| {
+            let app_handle_for_ipc = app.handle().clone();
+
+            // Background task to handle second-instance activation requests via TCP
+            tauri::async_runtime::spawn(async move {
+                let listener = single_instance_listener;
+                loop {
+                    match listener.accept() {
+                        Ok((_, _)) => {
+                            // Secondary instance launched: bring config and main windows to front
+                            if let Some(win) = app_handle_for_ipc.get_webview_window("config") {
+                                let _ = win.show();
+                                let _ = win.unminimize();
+                                let _ = win.set_focus();
+                            }
+                            if let Some(main_win) = app_handle_for_ipc.get_webview_window("main") {
+                                let _ = main_win.show();
+                            }
+                        }
+                        Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                            sleep(Duration::from_millis(250)).await;
+                        }
+                        Err(_) => {
+                            sleep(Duration::from_millis(500)).await;
+                        }
+                    }
+                }
+            });
+
             // 1. Setup 'main' OSD window
             if let Some(main_window) = app.get_webview_window("main") {
                 let initial_config = config::load_config();
@@ -177,6 +188,7 @@ fn main() {
                     }
                 });
                 let _ = config_window.show();
+                let _ = config_window.unminimize();
                 let _ = config_window.set_focus();
             }
 
