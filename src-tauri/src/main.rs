@@ -114,18 +114,44 @@ fn close_config_window(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(windows)]
+fn ensure_single_instance() {
+    extern "system" {
+        fn CreateMutexW(lpMutexAttributes: *const std::ffi::c_void, bInitialOwner: i32, lpName: *const u16) -> *mut std::ffi::c_void;
+        fn GetLastError() -> u32;
+        fn FindWindowW(lpClassName: *const u16, lpWindowName: *const u16) -> isize;
+        fn ShowWindow(hWnd: isize, nCmdShow: i32) -> i32;
+        fn SetForegroundWindow(hWnd: isize) -> i32;
+    }
+
+    let mutex_name: Vec<u16> = "Global\\com_mdmonitor_dev_single_instance\0".encode_utf16().collect();
+    unsafe {
+        let _ = CreateMutexW(std::ptr::null(), 1, mutex_name.as_ptr());
+        if GetLastError() == 183 { // ERROR_ALREADY_EXISTS = 183
+            let config_title: Vec<u16> = "ตั้งค่า\0".encode_utf16().collect();
+            let hwnd_config = FindWindowW(std::ptr::null(), config_title.as_ptr());
+            if hwnd_config != 0 {
+                ShowWindow(hwnd_config, 9); // SW_RESTORE = 9
+                ShowWindow(hwnd_config, 5); // SW_SHOW = 5
+                SetForegroundWindow(hwnd_config);
+            }
+
+            let main_title: Vec<u16> = "MD Monitor\0".encode_utf16().collect();
+            let hwnd_main = FindWindowW(std::ptr::null(), main_title.as_ptr());
+            if hwnd_main != 0 {
+                ShowWindow(hwnd_main, 5); // SW_SHOW = 5
+            }
+
+            std::process::exit(0);
+        }
+    }
+}
+
 fn main() {
+    #[cfg(windows)]
+    ensure_single_instance();
+
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(config_win) = app.get_webview_window("config") {
-                let _ = config_win.show();
-                let _ = config_win.unminimize();
-                let _ = config_win.set_focus();
-            }
-            if let Some(main_win) = app.get_webview_window("main") {
-                let _ = main_win.show();
-            }
-        }))
         .setup(|app| {
             // 1. Setup 'main' OSD window
             if let Some(main_window) = app.get_webview_window("main") {
