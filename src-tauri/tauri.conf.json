@@ -25,7 +25,7 @@
       },
       {
         "label": "config",
-        "title": "ตั้งค่า (Config)",
+        "title": "ตั้งค่า",
         "url": "config.html",
         "width": 450,
         "height": 680,

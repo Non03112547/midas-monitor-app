@@ -27,41 +27,41 @@ interface AppConfig {
 // Translations matching Python monitor.pyw
 const i18n: Record<string, Record<string, string>> = {
   th: {
-    configTitle: "⚙️ ตั้งค่า (Config)",
+    configTitle: "⚙️ ตั้งค่า",
     langBtn: "Language: TH",
-    btnAdjustPos: "📐 ตั้งค่าตำแหน่ง (Adjust Position)",
+    btnAdjustPos: "📐 ตั้งค่าตำแหน่ง",
     radarRes: "จอหลัก: ",
     presetTl: "↖ บนซ้าย",
     presetTr: "↗ บนขวา",
     presetBl: "↙ ล่างซ้าย",
     presetBr: "↘ ล่างขวา",
-    secColors: "🎨 สี (Colors)",
-    lblColorBg: "เลือกสีพื้นหลัง (BG Color)",
-    lblColorText: "เลือกสีข้อความ (Text Color)",
-    lblColorOutline: "เลือกสีขอบข้อความ (Outline Color)",
-    secSliders: "🎚️ ความทึบและขนาด (Sliders)",
+    secColors: "🎨 สี",
+    lblColorBg: "เลือกสีพื้นหลัง",
+    lblColorText: "เลือกสีข้อความ",
+    lblColorOutline: "เลือกสีขอบข้อความ",
+    secSliders: "🎚️ ความทึบและขนาด",
     lblOpacity: "ความทึบพื้นหลัง:",
     lblFontSize: "ขนาดตัวอักษร:",
-    secLayout: "🔲 การจัดวาง (Layout & Outline)",
-    lblChkOutline: "เปิดใช้งานขอบข้อความ (Text Outline)",
-    lblLayoutDir: "รูปแบบการจัดวาง (Layout):",
-    layoutVertical: "Vertical (แนวตั้ง)",
-    layoutHorizontal: "Horizontal (แนวนอน)",
-    secMonitors: "📊 การแสดงผลฮาร์ดแวร์ (Display Items)",
+    secLayout: "🔲 การจัดวาง",
+    lblChkOutline: "เปิดใช้งานขอบข้อความ",
+    lblLayoutDir: "รูปแบบการจัดวาง:",
+    layoutVertical: "แนวตั้ง",
+    layoutHorizontal: "แนวนอน",
+    secMonitors: "📊 การแสดงผลฮาร์ดแวร์",
     lblChkCpu: "แสดง CPU",
     lblChkGpu: "แสดง GPU",
     lblChkRam: "แสดง RAM",
-    lblChkDisk: "แสดง DISK (ทุกไดรฟ์)",
+    lblChkDisk: "แสดง DISK",
     lblChkNet: "แสดง Network",
-    lblChkPing: "แสดง Ping (Latency)",
+    lblChkPing: "แสดง Ping",
     lblChkFps: "แสดง FPS",
-    secSystem: "🚀 ระบบ (System)",
-    lblChkAutostart: "เปิดโปรแกรมตอนเปิดเครื่อง (Auto-Start)",
-    btnReset: "คืนค่าเริ่มต้น (Reset to Defaults)",
-    btnDone: "เสร็จสิ้น (Done)",
+    secSystem: "🚀 ระบบ",
+    lblChkAutostart: "เปิดโปรแกรมตอนเปิดเครื่อง",
+    btnReset: "คืนค่าเริ่มต้น",
+    btnDone: "เสร็จสิ้น",
   },
   en: {
-    configTitle: "⚙️ Settings (Config)",
+    configTitle: "⚙️ Settings",
     langBtn: "Language: EN",
     btnAdjustPos: "📐 Adjust Position",
     radarRes: "Primary Screen: ",
@@ -85,12 +85,12 @@ const i18n: Record<string, Record<string, string>> = {
     lblChkCpu: "Show CPU",
     lblChkGpu: "Show GPU",
     lblChkRam: "Show RAM",
-    lblChkDisk: "Show DISK (All Drives)",
+    lblChkDisk: "Show DISK",
     lblChkNet: "Show Network",
-    lblChkPing: "Show Ping (Latency)",
+    lblChkPing: "Show Ping",
     lblChkFps: "Show FPS",
     secSystem: "🚀 System",
-    lblChkAutostart: "Run on Startup (Auto-Start)",
+    lblChkAutostart: "Run on Startup",
     btnReset: "Reset to Defaults",
     btnDone: "Done",
   },
@@ -555,10 +555,14 @@ btnReset.addEventListener('click', async () => {
 
 btnDone.addEventListener('click', async () => {
   try {
-    const win = getCurrentWebviewWindow();
-    await win.hide();
+    await invoke('close_config_window');
   } catch (err) {
-    console.error('Failed to hide config window:', err);
+    try {
+      const win = getCurrentWebviewWindow();
+      await win.hide();
+    } catch (e) {
+      console.error('Failed to hide config window:', e);
+    }
   }
 });
 

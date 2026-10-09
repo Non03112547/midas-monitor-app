@@ -3,21 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ตั้งค่า (Config)</title>
+    <title>ตั้งค่า</title>
     <link rel="stylesheet" href="/src/config.css" />
   </head>
   <body>
     <div class="config-container">
       <!-- Header -->
       <div class="config-header">
-        <h2 id="config-title" class="config-title">⚙️ ตั้งค่า (Config)</h2>
+        <h2 id="config-title" class="config-title">⚙️ ตั้งค่า</h2>
         <button id="btn-lang-toggle" class="btn-lang">Language: TH</button>
       </div>
 
       <!-- Radar Trigger / Mini-Map -->
       <div class="setting-group">
         <button id="btn-toggle-radar" class="btn-action">
-          📐 ตั้งค่าตำแหน่ง (Adjust Position)
+          📐 ตั้งค่าตำแหน่ง
         </button>
 
         <div id="radar-section" class="radar-box">
@@ -42,23 +42,23 @@
 
       <!-- Colors -->
       <div class="setting-group">
-        <span id="sec-colors" class="group-title">🎨 สี (Colors)</span>
+        <span id="sec-colors" class="group-title">🎨 สี</span>
         <div class="setting-row">
-          <label id="lbl-color-bg" for="color-bg">เลือกสีพื้นหลัง (BG Color)</label>
+          <label id="lbl-color-bg" for="color-bg">เลือกสีพื้นหลัง</label>
           <div class="color-picker-wrapper">
             <input type="color" id="color-bg" />
             <span id="hex-bg" class="color-hex">#000000</span>
           </div>
         </div>
         <div class="setting-row">
-          <label id="lbl-color-text" for="color-text">เลือกสีข้อความ (Text Color)</label>
+          <label id="lbl-color-text" for="color-text">เลือกสีข้อความ</label>
           <div class="color-picker-wrapper">
             <input type="color" id="color-text" />
             <span id="hex-text" class="color-hex">#ff0000</span>
           </div>
         </div>
         <div class="setting-row">
-          <label id="lbl-color-outline" for="color-outline">เลือกสีขอบข้อความ (Outline Color)</label>
+          <label id="lbl-color-outline" for="color-outline">เลือกสีขอบข้อความ</label>
           <div class="color-picker-wrapper">
             <input type="color" id="color-outline" />
             <span id="hex-outline" class="color-hex">#00007f</span>
@@ -68,7 +68,7 @@
 
       <!-- Sliders -->
       <div class="setting-group">
-        <span id="sec-sliders" class="group-title">🎚️ ความทึบและขนาด (Sliders)</span>
+        <span id="sec-sliders" class="group-title">🎚️ ความทึบและขนาด</span>
         <div class="slider-group">
           <div class="slider-label-row">
             <span id="lbl-opacity">ความทึบพื้นหลัง:</span>
@@ -87,23 +87,23 @@
 
       <!-- Appearance & Layout -->
       <div class="setting-group">
-        <span id="sec-layout" class="group-title">🔲 การจัดวาง (Layout & Outline)</span>
+        <span id="sec-layout" class="group-title">🔲 การจัดวาง</span>
         <label class="checkbox-label">
           <input type="checkbox" id="chk-outline" />
-          <span id="lbl-chk-outline">เปิดใช้งานขอบข้อความ (Text Outline)</span>
+          <span id="lbl-chk-outline">เปิดใช้งานขอบข้อความ</span>
         </label>
         <div class="setting-row">
-          <label id="lbl-layout-dir" for="select-layout">รูปแบบการจัดวาง (Layout):</label>
+          <label id="lbl-layout-dir" for="select-layout">รูปแบบการจัดวาง:</label>
           <select id="select-layout">
-            <option value="vertical">Vertical (แนวตั้ง)</option>
-            <option value="horizontal">Horizontal (แนวนอน)</option>
+            <option value="vertical">แนวตั้ง</option>
+            <option value="horizontal">แนวนอน</option>
           </select>
         </div>
       </div>
 
       <!-- Hardware Monitors -->
       <div class="setting-group">
-        <span id="sec-monitors" class="group-title">📊 การแสดงผลฮาร์ดแวร์ (Display Items)</span>
+        <span id="sec-monitors" class="group-title">📊 การแสดงผลฮาร์ดแวร์</span>
         <div class="checkbox-grid">
           <label class="checkbox-label">
             <input type="checkbox" id="chk-cpu" />
@@ -119,7 +119,7 @@
           </label>
           <label class="checkbox-label">
             <input type="checkbox" id="chk-disk" />
-            <span id="lbl-chk-disk">แสดง DISK (ทุกไดรฟ์)</span>
+            <span id="lbl-chk-disk">แสดง DISK</span>
           </label>
           <label class="checkbox-label">
             <input type="checkbox" id="chk-net" />
@@ -127,7 +127,7 @@
           </label>
           <label class="checkbox-label">
             <input type="checkbox" id="chk-ping" />
-            <span id="lbl-chk-ping">แสดง Ping (Latency)</span>
+            <span id="lbl-chk-ping">แสดง Ping</span>
           </label>
           <label class="checkbox-label">
             <input type="checkbox" id="chk-fps" />
@@ -138,17 +138,17 @@
 
       <!-- System -->
       <div class="setting-group">
-        <span id="sec-system" class="group-title">🚀 ระบบ (System)</span>
+        <span id="sec-system" class="group-title">🚀 ระบบ</span>
         <label class="checkbox-label">
           <input type="checkbox" id="chk-autostart" />
-          <span id="lbl-chk-autostart">เปิดโปรแกรมตอนเปิดเครื่อง (Auto-Start)</span>
+          <span id="lbl-chk-autostart">เปิดโปรแกรมตอนเปิดเครื่อง</span>
         </label>
       </div>
 
       <!-- Footer -->
       <div class="config-footer">
-        <button id="btn-reset" class="btn-reset">คืนค่าเริ่มต้น (Reset to Defaults)</button>
-        <button id="btn-done" class="btn-close">เสร็จสิ้น (Done)</button>
+        <button id="btn-reset" class="btn-reset">คืนค่าเริ่มต้น</button>
+        <button id="btn-done" class="btn-close">เสร็จสิ้น</button>
       </div>
     </div>
 

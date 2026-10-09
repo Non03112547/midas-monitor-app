@@ -106,6 +106,14 @@ fn set_autostart(enable: bool) -> Result<(), String> {
     config::set_autostart_registry(enable)
 }
 
+#[tauri::command]
+fn close_config_window(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("config") {
+        win.hide().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
@@ -136,12 +144,12 @@ fn main() {
                 let _ = config_window.set_focus();
             }
 
-            // 3. System Tray Menu (matching Python monitor.pyw lines 748-766)
-            let show_i = MenuItem::with_id(app, "show", "แสดงหน้าจอ (Show)", true, None::<&str>)?;
-            let hide_i = MenuItem::with_id(app, "hide", "ซ่อนหน้าจอ (Hide)", true, None::<&str>)?;
-            let config_i = MenuItem::with_id(app, "config", "ตั้งค่า (Config)", true, None::<&str>)?;
+            // 3. System Tray Menu
+            let show_i = MenuItem::with_id(app, "show", "แสดงหน้าจอ", true, None::<&str>)?;
+            let hide_i = MenuItem::with_id(app, "hide", "ซ่อนหน้าจอ", true, None::<&str>)?;
+            let config_i = MenuItem::with_id(app, "config", "ตั้งค่า", true, None::<&str>)?;
             let sep = PredefinedMenuItem::separator(app)?;
-            let exit_i = MenuItem::with_id(app, "exit", "ปิดโปรแกรม (Exit)", true, None::<&str>)?;
+            let exit_i = MenuItem::with_id(app, "exit", "ปิดโปรแกรม", true, None::<&str>)?;
 
             let menu = Menu::with_items(app, &[&show_i, &hide_i, &config_i, &sep, &exit_i])?;
 
@@ -228,7 +236,8 @@ fn main() {
             get_main_rect,
             get_window_position,
             set_window_size,
-            set_autostart
+            set_autostart,
+            close_config_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
