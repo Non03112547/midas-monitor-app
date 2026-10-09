@@ -116,6 +116,16 @@ fn close_config_window(app: tauri::AppHandle) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(config_win) = app.get_webview_window("config") {
+                let _ = config_win.show();
+                let _ = config_win.unminimize();
+                let _ = config_win.set_focus();
+            }
+            if let Some(main_win) = app.get_webview_window("main") {
+                let _ = main_win.show();
+            }
+        }))
         .setup(|app| {
             // 1. Setup 'main' OSD window
             if let Some(main_window) = app.get_webview_window("main") {
@@ -132,7 +142,7 @@ fn main() {
 
             // 2. Setup 'config' window
             if let Some(config_window) = app.get_webview_window("config") {
-                let _ = config_window.set_skip_taskbar(true);
+                let _ = config_window.set_skip_taskbar(false);
                 let config_clone = config_window.clone();
                 config_window.on_window_event(move |event| {
                     if let tauri::WindowEvent::CloseRequested { api, .. } = event {

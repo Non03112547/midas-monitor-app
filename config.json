@@ -1,13 +1,13 @@
 {
   "pos_x": 28,
   "pos_y": 19,
-  "bg_r": 255,
-  "bg_g": 255,
-  "bg_b": 255,
-  "bg_alpha": 0,
-  "font_size": 21,
+  "bg_r": 0,
+  "bg_g": 0,
+  "bg_b": 0,
+  "bg_alpha": 60,
+  "font_size": 20,
   "text_color": "#ffffff",
-  "outline_color": "#ff0000",
+  "outline_color": "#000000",
   "has_outline": true,
   "show_cpu": true,
   "show_gpu": true,
@@ -18,5 +18,6 @@
   "show_fps": true,
   "layout_direction": "vertical",
   "autostart": true,
-  "language": "th"
+  "language": "th",
+  "config_theme": "dark"
 }

@@ -17,3 +17,4 @@ nvml-wrapper = "0.10"
 windows = { version = "0.52.0", features = ["Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock"] }
 tokio = { version = "1", features = ["full"] }
 libloading = "0.8"
+tauri-plugin-single-instance = "2"
