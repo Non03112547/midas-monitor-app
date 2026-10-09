@@ -40,13 +40,14 @@ const i18n: Record<string, Record<string, string>> = {
     lblColorText: "เลือกสีข้อความ",
     lblColorOutline: "เลือกสีขอบข้อความ",
     secSliders: "🎚️ ความทึบและขนาด",
-    lblOpacity: "ความทึบพื้นหลัง:",
-    lblFontSize: "ขนาดตัวอักษร:",
+    lblOpacity: "ความทึบพื้นหลัง",
+    lblFontSize: "ขนาดตัวอักษร",
     secLayout: "🔲 การจัดวาง",
     lblChkOutline: "เปิดใช้งานขอบข้อความ",
     lblLayoutDir: "รูปแบบการจัดวาง:",
     layoutVertical: "แนวตั้ง",
     layoutHorizontal: "แนวนอน",
+    secTheme: "🎭 สลับธีม",
     secMonitors: "📊 การแสดงผลฮาร์ดแวร์",
     lblChkCpu: "แสดง CPU",
     lblChkGpu: "แสดง GPU",
@@ -74,13 +75,14 @@ const i18n: Record<string, Record<string, string>> = {
     lblColorText: "Choose Text Color",
     lblColorOutline: "Choose Outline Color",
     secSliders: "🎚️ Opacity & Font Size",
-    lblOpacity: "Background Opacity:",
-    lblFontSize: "Font Size:",
+    lblOpacity: "Background Opacity",
+    lblFontSize: "Font Size",
     secLayout: "🔲 Layout & Outline",
     lblChkOutline: "Enable Text Outline",
     lblLayoutDir: "Layout Direction:",
     layoutVertical: "Vertical",
     layoutHorizontal: "Horizontal",
+    secTheme: "🎭 Theme Presets",
     secMonitors: "📊 Display Items",
     lblChkCpu: "Show CPU",
     lblChkGpu: "Show GPU",
@@ -110,6 +112,76 @@ const presetTl = document.getElementById('preset-tl')!;
 const presetTr = document.getElementById('preset-tr')!;
 const presetBl = document.getElementById('preset-bl')!;
 const presetBr = document.getElementById('preset-br')!;
+
+const secTheme = document.getElementById('sec-theme')!;
+const themeButtons = document.querySelectorAll<HTMLButtonElement>('.btn-theme');
+
+interface ThemePreset {
+  text_color: string;
+  outline_color: string;
+  has_outline: boolean;
+  bg_r: number;
+  bg_g: number;
+  bg_b: number;
+  bg_alpha: number;
+}
+
+const THEMES: Record<string, ThemePreset> = {
+  cyber: {
+    text_color: "#00ffcc",
+    outline_color: "#000000",
+    has_outline: true,
+    bg_r: 0,
+    bg_g: 0,
+    bg_b: 0,
+    bg_alpha: 90,
+  },
+  gaming: {
+    text_color: "#ff3344",
+    outline_color: "#200005",
+    has_outline: true,
+    bg_r: 20,
+    bg_g: 0,
+    bg_b: 5,
+    bg_alpha: 110,
+  },
+  amber: {
+    text_color: "#ffb703",
+    outline_color: "#2b1b00",
+    has_outline: true,
+    bg_r: 15,
+    bg_g: 10,
+    bg_b: 0,
+    bg_alpha: 120,
+  },
+  synthwave: {
+    text_color: "#e056fd",
+    outline_color: "#240046",
+    has_outline: true,
+    bg_r: 16,
+    bg_g: 0,
+    bg_b: 43,
+    bg_alpha: 110,
+  },
+  matrix: {
+    text_color: "#00ff66",
+    outline_color: "#002b11",
+    has_outline: true,
+    bg_r: 0,
+    bg_g: 20,
+    bg_b: 5,
+    bg_alpha: 110,
+  },
+  stealth: {
+    text_color: "#f8f9fa",
+    outline_color: "#000000",
+    has_outline: true,
+    bg_r: 0,
+    bg_g: 0,
+    bg_b: 0,
+    bg_alpha: 80,
+  },
+};
 
 const secColors = document.getElementById('sec-colors')!;
 const lblColorBg = document.getElementById('lbl-color-bg')!;
@@ -228,14 +300,16 @@ function applyLanguage(lang: string) {
   presetBl.textContent = dict.presetBl;
   presetBr.textContent = dict.presetBr;
 
+  secTheme.textContent = dict.secTheme;
+
   secColors.textContent = dict.secColors;
   lblColorBg.textContent = dict.lblColorBg;
   lblColorText.textContent = dict.lblColorText;
   lblColorOutline.textContent = dict.lblColorOutline;
 
   secSliders.textContent = dict.secSliders;
-  lblOpacity.textContent = `${dict.lblOpacity} (${config.bg_alpha}):`;
-  lblFontSize.textContent = `${dict.lblFontSize} (${config.font_size}):`;
+  lblOpacity.textContent = dict.lblOpacity;
+  lblFontSize.textContent = dict.lblFontSize;
 
   secLayout.textContent = dict.secLayout;
   lblChkOutline.textContent = dict.lblChkOutline;
@@ -259,6 +333,57 @@ function applyLanguage(lang: string) {
   btnDone.textContent = dict.btnDone;
 
   radarRes.textContent = `${dict.radarRes}${screenWidth} x ${screenHeight}`;
+}
+
+function highlightActiveTheme() {
+  themeButtons.forEach((btn) => {
+    const key = btn.getAttribute('data-theme') || '';
+    const preset = THEMES[key];
+    if (
+      preset &&
+      preset.text_color.toLowerCase() === config.text_color.toLowerCase() &&
+      preset.outline_color.toLowerCase() === config.outline_color.toLowerCase() &&
+      preset.bg_r === config.bg_r &&
+      preset.bg_g === config.bg_g &&
+      preset.bg_b === config.bg_b &&
+      preset.bg_alpha === config.bg_alpha
+    ) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+function applyTheme(themeKey: string) {
+  const preset = THEMES[themeKey];
+  if (!preset) return;
+
+  config.text_color = preset.text_color;
+  config.outline_color = preset.outline_color;
+  config.has_outline = preset.has_outline;
+  config.bg_r = preset.bg_r;
+  config.bg_g = preset.bg_g;
+  config.bg_b = preset.bg_b;
+  config.bg_alpha = preset.bg_alpha;
+
+  const bgHex = rgbToHex(config.bg_r, config.bg_g, config.bg_b);
+  colorBg.value = bgHex;
+  hexBg.textContent = bgHex;
+
+  colorText.value = config.text_color;
+  hexText.textContent = config.text_color;
+
+  colorOutline.value = config.outline_color;
+  hexOutline.textContent = config.outline_color;
+
+  chkOutline.checked = config.has_outline;
+
+  sliderOpacity.value = config.bg_alpha.toString();
+  badgeOpacity.textContent = config.bg_alpha.toString();
+
+  highlightActiveTheme();
+  saveCurrentConfig();
 }
 
 function populateForm() {
@@ -292,6 +417,7 @@ function populateForm() {
   chkAutostart.checked = config.autostart;
 
   applyLanguage(config.language);
+  highlightActiveTheme();
   updateRadarDisplay();
 }
 
@@ -452,24 +578,37 @@ btnLangToggle.addEventListener('click', () => {
   saveCurrentConfig();
 });
 
+// Theme Buttons Listeners
+themeButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const themeKey = btn.getAttribute('data-theme');
+    if (themeKey) {
+      applyTheme(themeKey);
+    }
+  });
+});
+
 colorBg.addEventListener('input', () => {
   const rgb = hexToRgb(colorBg.value);
   config.bg_r = rgb.r;
   config.bg_g = rgb.g;
   config.bg_b = rgb.b;
   hexBg.textContent = colorBg.value;
+  highlightActiveTheme();
   saveCurrentConfig();
 });
 
 colorText.addEventListener('input', () => {
   config.text_color = colorText.value;
   hexText.textContent = colorText.value;
+  highlightActiveTheme();
   saveCurrentConfig();
 });
 
 colorOutline.addEventListener('input', () => {
   config.outline_color = colorOutline.value;
   hexOutline.textContent = colorOutline.value;
+  highlightActiveTheme();
   saveCurrentConfig();
 });
 
@@ -477,8 +616,7 @@ sliderOpacity.addEventListener('input', () => {
   const val = parseInt(sliderOpacity.value, 10);
   config.bg_alpha = val;
   badgeOpacity.textContent = val.toString();
-  const dict = i18n[config.language] || i18n.th;
-  lblOpacity.textContent = `${dict.lblOpacity} (${val}):`;
+  highlightActiveTheme();
   saveCurrentConfig();
 });
 
@@ -486,13 +624,12 @@ sliderFontSize.addEventListener('input', () => {
   const val = parseInt(sliderFontSize.value, 10);
   config.font_size = val;
   badgeFontSize.textContent = `${val}px`;
-  const dict = i18n[config.language] || i18n.th;
-  lblFontSize.textContent = `${dict.lblFontSize} (${val}):`;
   saveCurrentConfig();
 });
 
 chkOutline.addEventListener('change', () => {
   config.has_outline = chkOutline.checked;
+  highlightActiveTheme();
   saveCurrentConfig();
 });
 
