@@ -631,7 +631,7 @@ class MonitorApp(QWidget):
         if self.autostart:
             try:
                 target = os.path.abspath(__file__)
-                pythonw = r"C:\Users\nong6\AppData\Local\Programs\Python\Python310\pythonw.exe"
+                pythonw = sys.executable.replace("python.exe", "pythonw.exe")
                 ps_cmd = f'''
                 $WshShell = New-Object -comObject WScript.Shell
                 $Shortcut = $WshShell.CreateShortcut("{startup_path}")
@@ -905,7 +905,7 @@ def main():
     app.setQuitOnLastWindowClosed(False)
     
     if not is_admin():
-        python_path = r"C:\Users\nong6\AppData\Local\Programs\Python\Python310\python.exe"
+        python_path = sys.executable.replace("python.exe", "pythonw.exe")
         script_path = os.path.abspath(sys.argv[0])
         log_msg(f"Not admin. Requesting UAC for: {python_path} {script_path}")
         ctypes.windll.shell32.ShellExecuteW(None, "runas", python_path, f'"{script_path}"', None, 0)
