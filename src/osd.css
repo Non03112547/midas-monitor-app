@@ -1,0 +1,79 @@
+:root {
+  font-family: Consolas, 'Segoe UI', -apple-system, BlinkMacSystemFont, monospace;
+  --font-size: 16px;
+  --text-color: #ff0000;
+  --outline-color: #00007f;
+  --bg-r: 0;
+  --bg-g: 0;
+  --bg-b: 0;
+  --bg-alpha: 60;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: transparent;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  width: 100vw;
+  height: 100vh;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.osd-container {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(var(--bg-r), var(--bg-g), var(--bg-b), calc(var(--bg-alpha) / 255));
+  padding: 6px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.osd-container.layout-horizontal {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--font-size);
+  font-weight: bold;
+  color: var(--text-color);
+  white-space: nowrap;
+  box-shadow: none !important;
+  text-shadow: none;
+}
+
+.has-outline .stat-row {
+  -webkit-text-stroke: 1px var(--outline-color);
+  text-shadow:
+    -1px -1px 0 var(--outline-color),
+     1px -1px 0 var(--outline-color),
+    -1px  1px 0 var(--outline-color),
+     1px  1px 0 var(--outline-color);
+}
+
+.stat-row .label {
+  color: inherit;
+  opacity: 0.9;
+}
+
+.stat-row .value {
+  color: inherit;
+  text-align: right;
+}

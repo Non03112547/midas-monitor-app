@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "D:\Midas_inc\project\midas-monitor-app\monitor_test.pyw", line 3, in <module>
-    import psutil
-ModuleNotFoundError: No module named 'psutil'

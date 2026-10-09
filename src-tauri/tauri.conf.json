@@ -1,0 +1,45 @@
+{
+  "productName": "md-monitor",
+  "version": "0.1.0",
+  "identifier": "com.mdmonitor.dev",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "MD Monitor",
+        "width": 300,
+        "height": 400,
+        "decorations": false,
+        "transparent": true,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "visible": true,
+        "shadow": false,
+        "skipTaskbar": true
+      },
+      {
+        "label": "config",
+        "title": "ตั้งค่า (Config)",
+        "url": "config.html",
+        "width": 450,
+        "height": 680,
+        "decorations": true,
+        "transparent": false,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "center": true,
+        "visible": true,
+        "skipTaskbar": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}

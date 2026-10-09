@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ตั้งค่า (Config)</title>
+    <link rel="stylesheet" href="/src/config.css" />
+  </head>
+  <body>
+    <div class="config-container">
+      <!-- Header -->
+      <div class="config-header">
+        <h2 id="config-title" class="config-title">⚙️ ตั้งค่า (Config)</h2>
+        <button id="btn-lang-toggle" class="btn-lang">Language: TH</button>
+      </div>
+
+      <!-- Radar Trigger / Mini-Map -->
+      <div class="setting-group">
+        <button id="btn-toggle-radar" class="btn-action">
+          📐 ตั้งค่าตำแหน่ง (Adjust Position)
+        </button>
+
+        <div id="radar-section" class="radar-box">
+          <div class="radar-header">
+            <span id="radar-res">จอหลัก: 1920 x 1080</span>
+            <span id="radar-coords" class="radar-coords">X: 28, Y: 19</span>
+          </div>
+
+          <!-- 400px Screen Mini-Map -->
+          <div id="screen-map" class="screen-map">
+            <div id="app-rep" class="app-rep">MD</div>
+          </div>
+
+          <div class="radar-presets">
+            <button id="preset-tl" class="btn-preset">↖ บนซ้าย</button>
+            <button id="preset-tr" class="btn-preset">↗ บนขวา</button>
+            <button id="preset-bl" class="btn-preset">↙ ล่างซ้าย</button>
+            <button id="preset-br" class="btn-preset">↘ ล่างขวา</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colors -->
+      <div class="setting-group">
+        <span id="sec-colors" class="group-title">🎨 สี (Colors)</span>
+        <div class="setting-row">
+          <label id="lbl-color-bg" for="color-bg">เลือกสีพื้นหลัง (BG Color)</label>
+          <div class="color-picker-wrapper">
+            <input type="color" id="color-bg" />
+            <span id="hex-bg" class="color-hex">#000000</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label id="lbl-color-text" for="color-text">เลือกสีข้อความ (Text Color)</label>
+          <div class="color-picker-wrapper">
+            <input type="color" id="color-text" />
+            <span id="hex-text" class="color-hex">#ff0000</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label id="lbl-color-outline" for="color-outline">เลือกสีขอบข้อความ (Outline Color)</label>
+          <div class="color-picker-wrapper">
+            <input type="color" id="color-outline" />
+            <span id="hex-outline" class="color-hex">#00007f</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sliders -->
+      <div class="setting-group">
+        <span id="sec-sliders" class="group-title">🎚️ ความทึบและขนาด (Sliders)</span>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span id="lbl-opacity">ความทึบพื้นหลัง:</span>
+            <span id="badge-opacity" class="badge">60</span>
+          </div>
+          <input type="range" id="slider-opacity" min="0" max="255" value="60" />
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span id="lbl-font-size">ขนาดตัวอักษร:</span>
+            <span id="badge-font-size" class="badge">16px</span>
+          </div>
+          <input type="range" id="slider-font-size" min="6" max="48" value="16" />
+        </div>
+      </div>
+
+      <!-- Appearance & Layout -->
+      <div class="setting-group">
+        <span id="sec-layout" class="group-title">🔲 การจัดวาง (Layout & Outline)</span>
+        <label class="checkbox-label">
+          <input type="checkbox" id="chk-outline" />
+          <span id="lbl-chk-outline">เปิดใช้งานขอบข้อความ (Text Outline)</span>
+        </label>
+        <div class="setting-row">
+          <label id="lbl-layout-dir" for="select-layout">รูปแบบการจัดวาง (Layout):</label>
+          <select id="select-layout">
+            <option value="vertical">Vertical (แนวตั้ง)</option>
+            <option value="horizontal">Horizontal (แนวนอน)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Hardware Monitors -->
+      <div class="setting-group">
+        <span id="sec-monitors" class="group-title">📊 การแสดงผลฮาร์ดแวร์ (Display Items)</span>
+        <div class="checkbox-grid">
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-cpu" />
+            <span id="lbl-chk-cpu">แสดง CPU</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-gpu" />
+            <span id="lbl-chk-gpu">แสดง GPU</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-ram" />
+            <span id="lbl-chk-ram">แสดง RAM</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-disk" />
+            <span id="lbl-chk-disk">แสดง DISK (ทุกไดรฟ์)</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-net" />
+            <span id="lbl-chk-net">แสดง Network</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-ping" />
+            <span id="lbl-chk-ping">แสดง Ping (Latency)</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-fps" />
+            <span id="lbl-chk-fps">แสดง FPS</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="setting-group">
+        <span id="sec-system" class="group-title">🚀 ระบบ (System)</span>
+        <label class="checkbox-label">
+          <input type="checkbox" id="chk-autostart" />
+          <span id="lbl-chk-autostart">เปิดโปรแกรมตอนเปิดเครื่อง (Auto-Start)</span>
+        </label>
+      </div>
+
+      <!-- Footer -->
+      <div class="config-footer">
+        <button id="btn-reset" class="btn-reset">คืนค่าเริ่มต้น (Reset to Defaults)</button>
+        <button id="btn-done" class="btn-close">เสร็จสิ้น (Done)</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/config.ts"></script>
+  </body>
+</html>

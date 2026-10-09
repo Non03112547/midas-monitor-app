@@ -1,1 +1,22 @@
-{"pos_x": 28, "pos_y": 19, "bg_r": 0, "bg_g": 0, "bg_b": 0, "bg_alpha": 60, "font_size": 16, "text_color": "#ff0000", "outline_color": "#00007f", "has_outline": true, "show_cpu": true, "show_gpu": true, "show_ram": true, "show_disk": false, "show_net": false, "show_ping": true, "show_fps": false, "layout_direction": "vertical", "autostart": true, "language": "th"}
+{
+  "pos_x": 28,
+  "pos_y": 19,
+  "bg_r": 0,
+  "bg_g": 0,
+  "bg_b": 0,
+  "bg_alpha": 60,
+  "font_size": 16,
+  "text_color": "#ff0000",
+  "outline_color": "#00007f",
+  "has_outline": true,
+  "show_cpu": true,
+  "show_gpu": true,
+  "show_ram": true,
+  "show_disk": false,
+  "show_net": false,
+  "show_ping": true,
+  "show_fps": false,
+  "layout_direction": "vertical",
+  "autostart": true,
+  "language": "th"
+}

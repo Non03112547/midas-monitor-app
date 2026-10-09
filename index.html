@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MD Monitor</title>
+    <link rel="stylesheet" href="/src/osd.css" />
+  </head>
+  <body>
+    <!-- OSD Container -->
+    <div id="osd-container" class="osd-container">
+      <div class="stat-row" id="row-cpu">
+        <span class="label">CPU</span>
+        <span class="value" id="cpu-val">--% | Temp: --°C</span>
+      </div>
+      <div class="stat-row" id="row-gpu">
+        <span class="label">GPU</span>
+        <span class="value">
+          <span id="gpu-val">--%</span> | Temp: <span id="gpu-temp">--°C</span>
+        </span>
+      </div>
+      <div class="stat-row" id="row-ram">
+        <span class="label">RAM</span>
+        <span class="value" id="ram-val">--%</span>
+      </div>
+      <div class="stat-row" id="row-disk">
+        <span class="label">DISK</span>
+        <span class="value" id="disk-val">--</span>
+      </div>
+      <div class="stat-row" id="row-net-down">
+        <span class="label">NET D</span>
+        <span class="value" id="net-down">-- KB/s</span>
+      </div>
+      <div class="stat-row" id="row-net-up">
+        <span class="label">NET U</span>
+        <span class="value" id="net-up">-- KB/s</span>
+      </div>
+      <div class="stat-row" id="row-ping">
+        <span class="label">PING</span>
+        <span class="value" id="ping-val">-- ms</span>
+      </div>
+      <div class="stat-row" id="row-fps">
+        <span class="label">FPS</span>
+        <span class="value" id="fps-val">--</span>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
