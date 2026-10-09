@@ -22,6 +22,7 @@ interface AppConfig {
   layout_direction: string;
   autostart: boolean;
   language: string;
+  config_theme?: string;
 }
 
 // Translations matching Python monitor.pyw
@@ -29,6 +30,8 @@ const i18n: Record<string, Record<string, string>> = {
   th: {
     configTitle: "⚙️ ตั้งค่า",
     langBtn: "Language: TH",
+    themeDark: "🌙 ธีมมืด",
+    themeLight: "☀️ ธีมสว่าง",
     btnAdjustPos: "📐 ตั้งค่าตำแหน่ง",
     radarRes: "จอหลัก: ",
     presetTl: "↖ บนซ้าย",
@@ -47,7 +50,7 @@ const i18n: Record<string, Record<string, string>> = {
     lblLayoutDir: "รูปแบบการจัดวาง:",
     layoutVertical: "แนวตั้ง",
     layoutHorizontal: "แนวนอน",
-    secTheme: "🎭 สลับธีม",
+    secTheme: "🎨 พรีเซ็ตสี OSD",
     secMonitors: "📊 การแสดงผลฮาร์ดแวร์",
     lblChkCpu: "แสดง CPU",
     lblChkGpu: "แสดง GPU",
@@ -64,6 +67,8 @@ const i18n: Record<string, Record<string, string>> = {
   en: {
     configTitle: "⚙️ Settings",
     langBtn: "Language: EN",
+    themeDark: "🌙 Dark",
+    themeLight: "☀️ Light",
     btnAdjustPos: "📐 Adjust Position",
     radarRes: "Primary Screen: ",
     presetTl: "↖ Top-Left",
@@ -82,7 +87,7 @@ const i18n: Record<string, Record<string, string>> = {
     lblLayoutDir: "Layout Direction:",
     layoutVertical: "Vertical",
     layoutHorizontal: "Horizontal",
-    secTheme: "🎭 Theme Presets",
+    secTheme: "🎨 OSD Color Presets",
     secMonitors: "📊 Display Items",
     lblChkCpu: "Show CPU",
     lblChkGpu: "Show GPU",
@@ -100,6 +105,7 @@ const i18n: Record<string, Record<string, string>> = {
 
 // DOM Elements
 const configTitle = document.getElementById('config-title')!;
+const btnThemeToggle = document.getElementById('btn-theme-toggle')!;
 const btnLangToggle = document.getElementById('btn-lang-toggle')!;
 const btnToggleRadar = document.getElementById('btn-toggle-radar')!;
 const radarSection = document.getElementById('radar-section')!;
@@ -255,7 +261,8 @@ let config: AppConfig = {
   show_fps: false,
   layout_direction: "vertical",
   autostart: true,
-  language: "th"
+  language: "th",
+  config_theme: "dark"
 };
 
 let screenWidth = 1920;
@@ -290,9 +297,23 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   };
 }
 
+function applyConfigTheme(theme: string) {
+  const isLight = theme === 'light';
+  document.body.setAttribute('data-theme', isLight ? 'light' : 'dark');
+  config.config_theme = isLight ? 'light' : 'dark';
+  const dict = i18n[config.language] || i18n.th;
+  if (btnThemeToggle) {
+    btnThemeToggle.textContent = isLight ? dict.themeLight : dict.themeDark;
+  }
+}
+
 function applyLanguage(lang: string) {
   const dict = i18n[lang] || i18n.th;
   configTitle.textContent = dict.configTitle;
+  if (btnThemeToggle) {
+    const isLight = config.config_theme === 'light';
+    btnThemeToggle.textContent = isLight ? dict.themeLight : dict.themeDark;
+  }
   btnLangToggle.textContent = dict.langBtn;
   btnToggleRadar.textContent = dict.btnAdjustPos;
   presetTl.textContent = dict.presetTl;
@@ -416,6 +437,7 @@ function populateForm() {
 
   chkAutostart.checked = config.autostart;
 
+  applyConfigTheme(config.config_theme || 'dark');
   applyLanguage(config.language);
   highlightActiveTheme();
   updateRadarDisplay();
@@ -572,6 +594,12 @@ btnToggleRadar.addEventListener('click', () => {
 });
 
 // Settings Inputs Listeners
+btnThemeToggle.addEventListener('click', () => {
+  const nextTheme = config.config_theme === 'light' ? 'dark' : 'light';
+  applyConfigTheme(nextTheme);
+  saveCurrentConfig();
+});
+
 btnLangToggle.addEventListener('click', () => {
   config.language = config.language === 'th' ? 'en' : 'th';
   applyLanguage(config.language);

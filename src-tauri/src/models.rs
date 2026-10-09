@@ -44,6 +44,7 @@ pub struct AppConfig {
     pub layout_direction: String,
     pub autostart: bool,
     pub language: String,
+    pub config_theme: String,
 }
 
 impl Default for AppConfig {
@@ -69,6 +70,7 @@ impl Default for AppConfig {
             layout_direction: "vertical".to_string(),
             autostart: true,
             language: "th".to_string(),
+            config_theme: "dark".to_string(),
         }
     }
 }
