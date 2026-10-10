@@ -18,6 +18,7 @@ interface TelemetryUpdate {
   ping_ms: number;
   disks: DiskTelemetry[];
   disk_summary: string;
+  fps: number;
 }
 
 interface AppConfig {
@@ -145,7 +146,7 @@ listen<TelemetryUpdate>('telemetry-update', (event) => {
   netUp.textContent = `${data.net_up_kbps.toFixed(1)} KB/s`;
   pingVal.textContent = `${data.ping_ms.toFixed(1)} ms`;
   diskVal.textContent = data.disk_summary || '--';
-  fpsVal.textContent = 'N/A';
+  fpsVal.textContent = data.fps > 0 ? `${Math.round(data.fps)}` : 'N/A';
   autoFitWindow();
 }).catch(console.error);
 
