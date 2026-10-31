@@ -260,7 +260,7 @@ let config: AppConfig = {
   show_ping: true,
   show_fps: false,
   layout_direction: "vertical",
-  autostart: true,
+  autostart: false,
   language: "th",
   config_theme: "dark"
 };

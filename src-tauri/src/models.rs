@@ -68,7 +68,7 @@ impl Default for AppConfig {
             show_ping: true,
             show_fps: false,
             layout_direction: "vertical".to_string(),
-            autostart: true,
+            autostart: false,
             language: "th".to_string(),
             config_theme: "dark".to_string(),
         }

@@ -15,9 +15,9 @@
   "show_disk": false,
   "show_net": false,
   "show_ping": true,
-  "show_fps": true,
+  "show_fps": false,
   "layout_direction": "vertical",
-  "autostart": true,
+  "autostart": false,
   "language": "th",
   "config_theme": "dark"
 }
