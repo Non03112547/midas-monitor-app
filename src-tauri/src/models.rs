@@ -19,7 +19,6 @@ pub struct TelemetryUpdate {
     pub ping_ms: f64,
     pub disks: Vec<DiskTelemetry>,
     pub disk_summary: String,
-    pub fps: f64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

@@ -1,8 +1,8 @@
 :root {
   font-family: Consolas, 'Segoe UI', -apple-system, BlinkMacSystemFont, monospace;
-  --font-size: 16px;
-  --text-color: #ff0000;
-  --outline-color: #00007f;
+  --font-size: 20px;
+  --text-color: #ffffff;
+  --outline-color: #000000;
   --bg-r: 0;
   --bg-g: 0;
   --bg-b: 0;
@@ -48,15 +48,19 @@ body {
 
 .stat-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-size: var(--font-size);
   font-weight: bold;
   color: var(--text-color);
   white-space: nowrap;
   box-shadow: none !important;
   text-shadow: none;
+}
+
+.osd-container.layout-horizontal .stat-row .label {
+  min-width: auto;
 }
 
 .has-outline .stat-row {
@@ -71,9 +75,10 @@ body {
 .stat-row .label {
   color: inherit;
   opacity: 0.9;
+  min-width: 5ch;
 }
 
 .stat-row .value {
   color: inherit;
-  text-align: right;
+  text-align: left;
 }

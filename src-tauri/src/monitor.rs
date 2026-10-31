@@ -68,7 +68,6 @@ impl SysMonitor {
         let elapsed = self.last_check.elapsed().as_secs_f64();
         self.last_check = Instant::now();
         
-        self.networks.refresh_list();
         self.networks.refresh();
 
         let mut rx_total = 0;

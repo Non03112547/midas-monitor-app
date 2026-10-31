@@ -6,7 +6,6 @@ mod models;
 mod monitor;
 mod gpu;
 mod ping;
-mod fps;
 
 use tauri::Manager;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
@@ -23,7 +22,7 @@ fn get_config() -> AppConfig {
 #[tauri::command]
 fn save_config(app: tauri::AppHandle, config: AppConfig) -> Result<(), String> {
     config::save_config(&config)?;
-    let _ = config::set_autostart_registry(config.autostart);
+    // autostart registry is updated via set_autostart command
     let _ = app.emit("config-changed", &config);
     Ok(())
 }
@@ -62,7 +61,7 @@ fn set_main_position(app: tauri::AppHandle, x: i32, y: i32) -> Result<(), String
     let mut cfg = config::load_config();
     cfg.pos_x = x;
     cfg.pos_y = y;
-    let _ = config::save_config(&cfg);
+    // position is persisted via save_config on mouseup/preset click
     let _ = app.emit("config-changed", &cfg);
     Ok(())
 }
@@ -115,19 +114,56 @@ fn close_config_window(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+fn ensure_single_instance_or_exit() -> std::net::TcpListener {
+    match std::net::TcpListener::bind("127.0.0.1:45678") {
+        Ok(listener) => {
+            let _ = listener.set_nonblocking(true);
+            listener
+        }
+        Err(_) => {
+            // Already running! Signal the primary instance to show windows
+            if let Ok(mut stream) = std::net::TcpStream::connect("127.0.0.1:45678") {
+                use std::io::Write;
+                let _ = stream.write_all(b"show\n");
+            }
+            std::process::exit(0);
+        }
+    }
+}
+
 fn main() {
+    let single_instance_listener = ensure_single_instance_or_exit();
+
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(config_win) = app.get_webview_window("config") {
-                let _ = config_win.show();
-                let _ = config_win.unminimize();
-                let _ = config_win.set_focus();
-            }
-            if let Some(main_win) = app.get_webview_window("main") {
-                let _ = main_win.show();
-            }
-        }))
-        .setup(|app| {
+        .setup(move |app| {
+            let app_handle_for_ipc = app.handle().clone();
+
+            // Background task to handle second-instance activation requests via TCP
+            tauri::async_runtime::spawn(async move {
+                let listener = single_instance_listener;
+                loop {
+                    match listener.accept() {
+                        Ok((_, _)) => {
+                            // Secondary instance launched: bring config and main windows to front
+                            if let Some(win) = app_handle_for_ipc.get_webview_window("config") {
+                                let _ = win.show();
+                                let _ = win.unminimize();
+                                let _ = win.set_focus();
+                            }
+                            if let Some(main_win) = app_handle_for_ipc.get_webview_window("main") {
+                                let _ = main_win.show();
+                            }
+                        }
+                        Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                            sleep(Duration::from_millis(250)).await;
+                        }
+                        Err(_) => {
+                            sleep(Duration::from_millis(500)).await;
+                        }
+                    }
+                }
+            });
+
             // 1. Setup 'main' OSD window
             if let Some(main_window) = app.get_webview_window("main") {
                 let initial_config = config::load_config();
@@ -152,6 +188,7 @@ fn main() {
                     }
                 });
                 let _ = config_window.show();
+                let _ = config_window.unminimize();
                 let _ = config_window.set_focus();
             }
 
@@ -201,7 +238,6 @@ fn main() {
             tauri::async_runtime::spawn(async move {
                 let mut sys_monitor = monitor::SysMonitor::new();
                 let mut gpu_monitor = gpu::GpuMonitor::new();
-                let mut fps_monitor = fps::FpsMonitor::new();
                 
                 loop {
                     let cpu_usage = sys_monitor.get_cpu_usage();
@@ -211,7 +247,6 @@ fn main() {
                     let (disks, disk_summary) = sys_monitor.get_disk_usage();
                     let (gpu_usage, gpu_temp) = gpu_monitor.get_gpu_stats();
                     let ping_ms = ping::get_ping("8.8.8.8").await;
-                    let fps = fps_monitor.get_fps();
 
                     if cpu_temp <= 0.0 && gpu_temp > 0.0 {
                         cpu_temp = gpu_temp;
@@ -228,7 +263,6 @@ fn main() {
                         ping_ms,
                         disks,
                         disk_summary,
-                        fps,
                     };
                     
                     let _ = app_handle.emit("telemetry-update", payload);

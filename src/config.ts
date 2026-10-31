@@ -362,6 +362,7 @@ function highlightActiveTheme() {
     const preset = THEMES[key];
     if (
       preset &&
+      preset.has_outline === config.has_outline &&
       preset.text_color.toLowerCase() === config.text_color.toLowerCase() &&
       preset.outline_color.toLowerCase() === config.outline_color.toLowerCase() &&
       preset.bg_r === config.bg_r &&
@@ -443,9 +444,15 @@ function populateForm() {
   updateRadarDisplay();
 }
 
-async function saveCurrentConfig() {
+async function saveCurrentConfig(refreshMetrics = false) {
   try {
     await invoke('save_config', { config });
+    if (refreshMetrics) {
+      setTimeout(async () => {
+        await updateRadarMetrics();
+        updateRadarDisplay();
+      }, 80);
+    }
   } catch (err) {
     console.error('Failed to save config:', err);
   }
@@ -652,7 +659,7 @@ sliderFontSize.addEventListener('input', () => {
   const val = parseInt(sliderFontSize.value, 10);
   config.font_size = val;
   badgeFontSize.textContent = `${val}px`;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkOutline.addEventListener('change', () => {
@@ -663,42 +670,42 @@ chkOutline.addEventListener('change', () => {
 
 selectLayout.addEventListener('change', () => {
   config.layout_direction = selectLayout.value;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkCpu.addEventListener('change', () => {
   config.show_cpu = chkCpu.checked;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkGpu.addEventListener('change', () => {
   config.show_gpu = chkGpu.checked;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkRam.addEventListener('change', () => {
   config.show_ram = chkRam.checked;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkDisk.addEventListener('change', () => {
   config.show_disk = chkDisk.checked;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkNet.addEventListener('change', () => {
   config.show_net = chkNet.checked;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkPing.addEventListener('change', () => {
   config.show_ping = chkPing.checked;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkFps.addEventListener('change', () => {
   config.show_fps = chkFps.checked;
-  saveCurrentConfig();
+  saveCurrentConfig(true);
 });
 
 chkAutostart.addEventListener('change', async () => {
