@@ -129,12 +129,7 @@ impl SysMonitor {
         if cd_found && cd_total > 0 {
             let cd_used = cd_total.saturating_sub(cd_available);
             let cd_percent = (cd_used as f64 / cd_total as f64) * 100.0;
-            let label = if cd_labels.len() > 1 {
-                "C+D:".to_string()
-            } else {
-                format!("{}:", cd_labels.first().cloned().unwrap_or_else(|| "C".to_string()))
-            };
-            summary_parts.insert(0, format!("{} {:.0}%", label, cd_percent));
+            summary_parts.insert(0, format!("{:.0}%", cd_percent));
         }
 
         let summary = if summary_parts.is_empty() {
