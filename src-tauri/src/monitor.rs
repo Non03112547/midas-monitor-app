@@ -89,6 +89,11 @@ impl SysMonitor {
         let mut disks_vec = Vec::new();
         let mut summary_parts = Vec::new();
 
+        let mut cd_total: u64 = 0;
+        let mut cd_available: u64 = 0;
+        let mut cd_found = false;
+        let mut cd_labels = Vec::new();
+
         for disk in &self.disks {
             let total = disk.total_space();
             let available = disk.available_space();
@@ -99,8 +104,8 @@ impl SysMonitor {
                 let name = disk.name().to_string_lossy().to_string();
                 
                 // Format drive letter (e.g., "C:" from "C:\\" or "C:")
-                let drive_label = mount.trim_end_matches(['\\', '/']).to_string();
-                let display_name = if drive_label.is_empty() { name.clone() } else { drive_label };
+                let drive_label = mount.trim_end_matches(['\\', '/']).to_uppercase();
+                let display_name = if drive_label.is_empty() { name.clone() } else { drive_label.clone() };
 
                 disks_vec.push(DiskTelemetry {
                     name,
@@ -108,8 +113,28 @@ impl SysMonitor {
                     usage_percent,
                 });
 
-                summary_parts.push(format!("{} {:.0}%", display_name, usage_percent));
+                if drive_label.starts_with("C:") || drive_label.starts_with("D:") {
+                    cd_total += total;
+                    cd_available += available;
+                    cd_found = true;
+                    if !cd_labels.contains(&drive_label) {
+                        cd_labels.push(drive_label);
+                    }
+                } else {
+                    summary_parts.push(format!("{} {:.0}%", display_name, usage_percent));
+                }
             }
+        }
+
+        if cd_found && cd_total > 0 {
+            let cd_used = cd_total.saturating_sub(cd_available);
+            let cd_percent = (cd_used as f64 / cd_total as f64) * 100.0;
+            let label = if cd_labels.len() > 1 {
+                "C+D:".to_string()
+            } else {
+                format!("{}:", cd_labels.first().cloned().unwrap_or_else(|| "C".to_string()))
+            };
+            summary_parts.insert(0, format!("{} {:.0}%", label, cd_percent));
         }
 
         let summary = if summary_parts.is_empty() {
@@ -119,5 +144,18 @@ impl SysMonitor {
         };
 
         (disks_vec, summary)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_disk_usage() {
+        let mut sm = SysMonitor::new();
+        let (disks, summary) = sm.get_disk_usage();
+        println!("Test Disks count: {}, Summary: {}", disks.len(), summary);
+        assert!(!summary.is_empty());
     }
 }

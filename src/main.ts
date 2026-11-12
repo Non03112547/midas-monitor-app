@@ -18,6 +18,8 @@ interface TelemetryUpdate {
   ping_ms: number;
   disks: DiskTelemetry[];
   disk_summary: string;
+  power_w: number;
+  energy_wh: number;
 }
 
 interface AppConfig {
@@ -38,6 +40,7 @@ interface AppConfig {
   show_net: boolean;
   show_ping: boolean;
   show_fps: boolean;
+  show_power: boolean;
   layout_direction: string;
   autostart: boolean;
   language: string;
@@ -49,6 +52,7 @@ const rowCpu = document.getElementById('row-cpu')!;
 const rowGpu = document.getElementById('row-gpu')!;
 const rowRam = document.getElementById('row-ram')!;
 const rowDisk = document.getElementById('row-disk')!;
+const rowPower = document.getElementById('row-power')!;
 const rowNetDown = document.getElementById('row-net-down')!;
 const rowNetUp = document.getElementById('row-net-up')!;
 const rowPing = document.getElementById('row-ping')!;
@@ -59,6 +63,7 @@ const ramVal = document.getElementById('ram-val')!;
 const gpuVal = document.getElementById('gpu-val')!;
 const gpuTemp = document.getElementById('gpu-temp')!;
 const diskVal = document.getElementById('disk-val')!;
+const pwrVal = document.getElementById('pwr-val')!;
 const netDown = document.getElementById('net-down')!;
 const netUp = document.getElementById('net-up')!;
 const pingVal = document.getElementById('ping-val')!;
@@ -82,6 +87,7 @@ let config: AppConfig = {
   show_net: false,
   show_ping: true,
   show_fps: false,
+  show_power: true,
   layout_direction: "vertical",
   autostart: false,
   language: "th"
@@ -125,6 +131,7 @@ function applyOsdStyle() {
   rowGpu.style.display = config.show_gpu ? 'flex' : 'none';
   rowRam.style.display = config.show_ram ? 'flex' : 'none';
   rowDisk.style.display = config.show_disk ? 'flex' : 'none';
+  rowPower.style.display = config.show_power ? 'flex' : 'none';
   rowNetDown.style.display = config.show_net ? 'flex' : 'none';
   rowNetUp.style.display = config.show_net ? 'flex' : 'none';
   rowPing.style.display = config.show_ping ? 'flex' : 'none';
@@ -145,6 +152,11 @@ listen<TelemetryUpdate>('telemetry-update', (event) => {
   netUp.textContent = `${data.net_up_kbps.toFixed(1)} KB/s`;
   pingVal.textContent = `${data.ping_ms.toFixed(1)} ms`;
   diskVal.textContent = data.disk_summary || '--';
+  const pwrStr = `${data.power_w.toFixed(1)} W`;
+  const energyStr = data.energy_wh < 1000 
+    ? `${data.energy_wh.toFixed(1)} Wh` 
+    : `${(data.energy_wh / 1000).toFixed(2)} kWh`;
+  pwrVal.textContent = `${pwrStr} | ${energyStr}`;
   fpsVal.textContent = 'N/A';
   autoFitWindow();
 }).catch(console.error);

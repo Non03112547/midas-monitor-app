@@ -19,6 +19,7 @@ interface AppConfig {
   show_net: boolean;
   show_ping: boolean;
   show_fps: boolean;
+  show_power?: boolean;
   layout_direction: string;
   autostart: boolean;
   language: string;
@@ -59,6 +60,7 @@ const i18n: Record<string, Record<string, string>> = {
     lblChkNet: "แสดง Network",
     lblChkPing: "แสดง Ping",
     lblChkFps: "แสดง FPS",
+    lblChkPower: "แสดงการใช้ไฟ (Power)",
     secSystem: "🚀 ระบบ",
     lblChkAutostart: "เปิดโปรแกรมตอนเปิดเครื่อง",
     btnReset: "คืนค่าเริ่มต้น",
@@ -96,6 +98,7 @@ const i18n: Record<string, Record<string, string>> = {
     lblChkNet: "Show Network",
     lblChkPing: "Show Ping",
     lblChkFps: "Show FPS",
+    lblChkPower: "Show Power / Energy",
     secSystem: "🚀 System",
     lblChkAutostart: "Run on Startup",
     btnReset: "Reset to Defaults",
@@ -232,6 +235,8 @@ const chkPing = document.getElementById('chk-ping') as HTMLInputElement;
 const lblChkPing = document.getElementById('lbl-chk-ping')!;
 const chkFps = document.getElementById('chk-fps') as HTMLInputElement;
 const lblChkFps = document.getElementById('lbl-chk-fps')!;
+const chkPower = document.getElementById('chk-power') as HTMLInputElement;
+const lblChkPower = document.getElementById('lbl-chk-power')!;
 
 const secSystem = document.getElementById('sec-system')!;
 const chkAutostart = document.getElementById('chk-autostart') as HTMLInputElement;
@@ -346,6 +351,7 @@ function applyLanguage(lang: string) {
   lblChkNet.textContent = dict.lblChkNet;
   lblChkPing.textContent = dict.lblChkPing;
   lblChkFps.textContent = dict.lblChkFps;
+  lblChkPower.textContent = dict.lblChkPower;
 
   secSystem.textContent = dict.secSystem;
   lblChkAutostart.textContent = dict.lblChkAutostart;
@@ -435,6 +441,7 @@ function populateForm() {
   chkNet.checked = config.show_net;
   chkPing.checked = config.show_ping;
   chkFps.checked = config.show_fps;
+  chkPower.checked = config.show_power !== false;
 
   chkAutostart.checked = config.autostart;
 
@@ -705,6 +712,11 @@ chkPing.addEventListener('change', () => {
 
 chkFps.addEventListener('change', () => {
   config.show_fps = chkFps.checked;
+  saveCurrentConfig(true);
+});
+
+chkPower.addEventListener('change', () => {
+  config.show_power = chkPower.checked;
   saveCurrentConfig(true);
 });
 

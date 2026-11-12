@@ -19,6 +19,8 @@ pub struct TelemetryUpdate {
     pub ping_ms: f64,
     pub disks: Vec<DiskTelemetry>,
     pub disk_summary: String,
+    pub power_w: f64,
+    pub energy_wh: f64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -41,6 +43,7 @@ pub struct AppConfig {
     pub show_net: bool,
     pub show_ping: bool,
     pub show_fps: bool,
+    pub show_power: bool,
     pub layout_direction: String,
     pub autostart: bool,
     pub language: String,
@@ -67,6 +70,7 @@ impl Default for AppConfig {
             show_net: false,
             show_ping: true,
             show_fps: false,
+            show_power: true,
             layout_direction: "vertical".to_string(),
             autostart: false,
             language: "th".to_string(),

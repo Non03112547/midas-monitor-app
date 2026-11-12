@@ -6,6 +6,7 @@ mod models;
 mod monitor;
 mod gpu;
 mod ping;
+mod power;
 
 use tauri::Manager;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
@@ -238,6 +239,7 @@ fn main() {
             tauri::async_runtime::spawn(async move {
                 let mut sys_monitor = monitor::SysMonitor::new();
                 let mut gpu_monitor = gpu::GpuMonitor::new();
+                let mut power_monitor = power::PowerMonitor::new();
                 
                 loop {
                     let cpu_usage = sys_monitor.get_cpu_usage();
@@ -246,6 +248,7 @@ fn main() {
                     let (net_down_kbps, net_up_kbps) = sys_monitor.get_network_usage();
                     let (disks, disk_summary) = sys_monitor.get_disk_usage();
                     let (gpu_usage, gpu_temp) = gpu_monitor.get_gpu_stats();
+                    let (power_w, energy_wh) = power_monitor.get_power_stats();
                     let ping_ms = ping::get_ping("8.8.8.8").await;
 
                     if cpu_temp <= 0.0 && gpu_temp > 0.0 {
@@ -263,6 +266,8 @@ fn main() {
                         ping_ms,
                         disks,
                         disk_summary,
+                        power_w,
+                        energy_wh,
                     };
                     
                     let _ = app_handle.emit("telemetry-update", payload);
