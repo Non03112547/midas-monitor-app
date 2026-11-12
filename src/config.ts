@@ -29,30 +29,30 @@ interface AppConfig {
 // Translations matching Python monitor.pyw
 const i18n: Record<string, Record<string, string>> = {
   th: {
-    configTitle: "⚙️ ตั้งค่า",
+    configTitle: "ตั้งค่า",
     langBtn: "Language: TH",
-    themeDark: "🌙 ธีมมืด",
-    themeLight: "☀️ ธีมสว่าง",
-    btnAdjustPos: "📐 ตั้งค่าตำแหน่ง",
+    themeDark: "ธีมมืด",
+    themeLight: "ธีมสว่าง",
+    btnAdjustPos: "ตั้งค่าตำแหน่ง",
     radarRes: "จอหลัก: ",
-    presetTl: "↖ บนซ้าย",
-    presetTr: "↗ บนขวา",
-    presetBl: "↙ ล่างซ้าย",
-    presetBr: "↘ ล่างขวา",
-    secColors: "🎨 สี",
+    presetTl: "บนซ้าย",
+    presetTr: "บนขวา",
+    presetBl: "ล่างซ้าย",
+    presetBr: "ล่างขวา",
+    secColors: "สี",
     lblColorBg: "เลือกสีพื้นหลัง",
     lblColorText: "เลือกสีข้อความ",
     lblColorOutline: "เลือกสีขอบข้อความ",
-    secSliders: "🎚️ ความทึบและขนาด",
+    secSliders: "ความทึบและขนาด",
     lblOpacity: "ความทึบพื้นหลัง",
     lblFontSize: "ขนาดตัวอักษร",
-    secLayout: "🔲 การจัดวาง",
+    secLayout: "การจัดวาง",
     lblChkOutline: "เปิดใช้งานขอบข้อความ",
     lblLayoutDir: "รูปแบบการจัดวาง:",
     layoutVertical: "แนวตั้ง",
     layoutHorizontal: "แนวนอน",
-    secTheme: "🎨 พรีเซ็ตสี OSD",
-    secMonitors: "📊 การแสดงผลฮาร์ดแวร์",
+    secTheme: "พรีเซ็ตสี OSD",
+    secMonitors: "การแสดงผลฮาร์ดแวร์",
     lblChkCpu: "แสดง CPU",
     lblChkGpu: "แสดง GPU",
     lblChkRam: "แสดง RAM",
@@ -61,36 +61,36 @@ const i18n: Record<string, Record<string, string>> = {
     lblChkPing: "แสดง Ping",
     lblChkFps: "แสดง FPS",
     lblChkPower: "แสดงการใช้ไฟ (Power)",
-    secSystem: "🚀 ระบบ",
+    secSystem: "ระบบ",
     lblChkAutostart: "เปิดโปรแกรมตอนเปิดเครื่อง",
     btnReset: "คืนค่าเริ่มต้น",
     btnDone: "เสร็จสิ้น",
   },
   en: {
-    configTitle: "⚙️ Settings",
+    configTitle: "Settings",
     langBtn: "Language: EN",
-    themeDark: "🌙 Dark",
-    themeLight: "☀️ Light",
-    btnAdjustPos: "📐 Adjust Position",
+    themeDark: "Dark",
+    themeLight: "Light",
+    btnAdjustPos: "Adjust Position",
     radarRes: "Primary Screen: ",
-    presetTl: "↖ Top-Left",
-    presetTr: "↗ Top-Right",
-    presetBl: "↙ Bottom-Left",
-    presetBr: "↘ Bottom-Right",
-    secColors: "🎨 Colors",
+    presetTl: "Top-Left",
+    presetTr: "Top-Right",
+    presetBl: "Bottom-Left",
+    presetBr: "Bottom-Right",
+    secColors: "Colors",
     lblColorBg: "Choose Background Color",
     lblColorText: "Choose Text Color",
     lblColorOutline: "Choose Outline Color",
-    secSliders: "🎚️ Opacity & Font Size",
+    secSliders: "Opacity & Font Size",
     lblOpacity: "Background Opacity",
     lblFontSize: "Font Size",
-    secLayout: "🔲 Layout & Outline",
+    secLayout: "Layout & Outline",
     lblChkOutline: "Enable Text Outline",
     lblLayoutDir: "Layout Direction:",
     layoutVertical: "Vertical",
     layoutHorizontal: "Horizontal",
-    secTheme: "🎨 OSD Color Presets",
-    secMonitors: "📊 Display Items",
+    secTheme: "OSD Color Presets",
+    secMonitors: "Display Items",
     lblChkCpu: "Show CPU",
     lblChkGpu: "Show GPU",
     lblChkRam: "Show RAM",
@@ -99,7 +99,7 @@ const i18n: Record<string, Record<string, string>> = {
     lblChkPing: "Show Ping",
     lblChkFps: "Show FPS",
     lblChkPower: "Show Power / Energy",
-    secSystem: "🚀 System",
+    secSystem: "System",
     lblChkAutostart: "Run on Startup",
     btnReset: "Reset to Defaults",
     btnDone: "Done",
@@ -107,10 +107,14 @@ const i18n: Record<string, Record<string, string>> = {
 };
 
 // DOM Elements
-const configTitle = document.getElementById('config-title')!;
+const txtConfigTitle = document.getElementById('txt-config-title')!;
 const btnThemeToggle = document.getElementById('btn-theme-toggle')!;
+const iconTheme = document.getElementById('icon-theme')!;
+const txtThemeToggle = document.getElementById('txt-theme-toggle')!;
 const btnLangToggle = document.getElementById('btn-lang-toggle')!;
+const txtLangToggle = document.getElementById('txt-lang-toggle')!;
 const btnToggleRadar = document.getElementById('btn-toggle-radar')!;
+const txtToggleRadar = document.getElementById('txt-toggle-radar')!;
 const radarSection = document.getElementById('radar-section')!;
 const radarRes = document.getElementById('radar-res')!;
 const radarCoords = document.getElementById('radar-coords')!;
@@ -118,11 +122,15 @@ const screenMap = document.getElementById('screen-map')!;
 const appRep = document.getElementById('app-rep')!;
 
 const presetTl = document.getElementById('preset-tl')!;
+const txtPresetTl = document.getElementById('txt-preset-tl')!;
 const presetTr = document.getElementById('preset-tr')!;
+const txtPresetTr = document.getElementById('txt-preset-tr')!;
 const presetBl = document.getElementById('preset-bl')!;
+const txtPresetBl = document.getElementById('txt-preset-bl')!;
 const presetBr = document.getElementById('preset-br')!;
+const txtPresetBr = document.getElementById('txt-preset-br')!;
 
-const secTheme = document.getElementById('sec-theme')!;
+const txtSecTheme = document.getElementById('txt-sec-theme')!;
 const themeButtons = document.querySelectorAll<HTMLButtonElement>('.btn-theme');
 
 interface ThemePreset {
@@ -192,7 +200,7 @@ const THEMES: Record<string, ThemePreset> = {
   },
 };
 
-const secColors = document.getElementById('sec-colors')!;
+const txtSecColors = document.getElementById('txt-sec-colors')!;
 const lblColorBg = document.getElementById('lbl-color-bg')!;
 const colorBg = document.getElementById('color-bg') as HTMLInputElement;
 const hexBg = document.getElementById('hex-bg')!;
@@ -205,7 +213,7 @@ const lblColorOutline = document.getElementById('lbl-color-outline')!;
 const colorOutline = document.getElementById('color-outline') as HTMLInputElement;
 const hexOutline = document.getElementById('hex-outline')!;
 
-const secSliders = document.getElementById('sec-sliders')!;
+const txtSecSliders = document.getElementById('txt-sec-sliders')!;
 const lblOpacity = document.getElementById('lbl-opacity')!;
 const badgeOpacity = document.getElementById('badge-opacity')!;
 const sliderOpacity = document.getElementById('slider-opacity') as HTMLInputElement;
@@ -214,13 +222,13 @@ const lblFontSize = document.getElementById('lbl-font-size')!;
 const badgeFontSize = document.getElementById('badge-font-size')!;
 const sliderFontSize = document.getElementById('slider-font-size') as HTMLInputElement;
 
-const secLayout = document.getElementById('sec-layout')!;
+const txtSecLayout = document.getElementById('txt-sec-layout')!;
 const chkOutline = document.getElementById('chk-outline') as HTMLInputElement;
 const lblChkOutline = document.getElementById('lbl-chk-outline')!;
 const lblLayoutDir = document.getElementById('lbl-layout-dir')!;
 const selectLayout = document.getElementById('select-layout') as HTMLSelectElement;
 
-const secMonitors = document.getElementById('sec-monitors')!;
+const txtSecMonitors = document.getElementById('txt-sec-monitors')!;
 const chkCpu = document.getElementById('chk-cpu') as HTMLInputElement;
 const lblChkCpu = document.getElementById('lbl-chk-cpu')!;
 const chkGpu = document.getElementById('chk-gpu') as HTMLInputElement;
@@ -238,12 +246,14 @@ const lblChkFps = document.getElementById('lbl-chk-fps')!;
 const chkPower = document.getElementById('chk-power') as HTMLInputElement;
 const lblChkPower = document.getElementById('lbl-chk-power')!;
 
-const secSystem = document.getElementById('sec-system')!;
+const txtSecSystem = document.getElementById('txt-sec-system')!;
 const chkAutostart = document.getElementById('chk-autostart') as HTMLInputElement;
 const lblChkAutostart = document.getElementById('lbl-chk-autostart')!;
 
 const btnReset = document.getElementById('btn-reset')!;
+const txtBtnReset = document.getElementById('txt-btn-reset')!;
 const btnDone = document.getElementById('btn-done')!;
+const txtBtnDone = document.getElementById('txt-btn-done')!;
 
 // App State
 let config: AppConfig = {
@@ -307,43 +317,48 @@ function applyConfigTheme(theme: string) {
   document.body.setAttribute('data-theme', isLight ? 'light' : 'dark');
   config.config_theme = isLight ? 'light' : 'dark';
   const dict = i18n[config.language] || i18n.th;
-  if (btnThemeToggle) {
-    btnThemeToggle.textContent = isLight ? dict.themeLight : dict.themeDark;
+  if (iconTheme) {
+    iconTheme.innerHTML = isLight
+      ? '<svg class="ui-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>'
+      : '<svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+  }
+  if (txtThemeToggle) {
+    txtThemeToggle.textContent = isLight ? dict.themeLight : dict.themeDark;
   }
 }
 
 function applyLanguage(lang: string) {
   const dict = i18n[lang] || i18n.th;
-  configTitle.textContent = dict.configTitle;
-  if (btnThemeToggle) {
+  if (txtConfigTitle) txtConfigTitle.textContent = dict.configTitle;
+  if (txtThemeToggle) {
     const isLight = config.config_theme === 'light';
-    btnThemeToggle.textContent = isLight ? dict.themeLight : dict.themeDark;
+    txtThemeToggle.textContent = isLight ? dict.themeLight : dict.themeDark;
   }
-  btnLangToggle.textContent = dict.langBtn;
-  btnToggleRadar.textContent = dict.btnAdjustPos;
-  presetTl.textContent = dict.presetTl;
-  presetTr.textContent = dict.presetTr;
-  presetBl.textContent = dict.presetBl;
-  presetBr.textContent = dict.presetBr;
+  if (txtLangToggle) txtLangToggle.textContent = dict.langBtn;
+  if (txtToggleRadar) txtToggleRadar.textContent = dict.btnAdjustPos;
+  if (txtPresetTl) txtPresetTl.textContent = dict.presetTl;
+  if (txtPresetTr) txtPresetTr.textContent = dict.presetTr;
+  if (txtPresetBl) txtPresetBl.textContent = dict.presetBl;
+  if (txtPresetBr) txtPresetBr.textContent = dict.presetBr;
 
-  secTheme.textContent = dict.secTheme;
+  if (txtSecTheme) txtSecTheme.textContent = dict.secTheme;
 
-  secColors.textContent = dict.secColors;
+  if (txtSecColors) txtSecColors.textContent = dict.secColors;
   lblColorBg.textContent = dict.lblColorBg;
   lblColorText.textContent = dict.lblColorText;
   lblColorOutline.textContent = dict.lblColorOutline;
 
-  secSliders.textContent = dict.secSliders;
+  if (txtSecSliders) txtSecSliders.textContent = dict.secSliders;
   lblOpacity.textContent = dict.lblOpacity;
   lblFontSize.textContent = dict.lblFontSize;
 
-  secLayout.textContent = dict.secLayout;
+  if (txtSecLayout) txtSecLayout.textContent = dict.secLayout;
   lblChkOutline.textContent = dict.lblChkOutline;
   lblLayoutDir.textContent = dict.lblLayoutDir;
   selectLayout.options[0].textContent = dict.layoutVertical;
   selectLayout.options[1].textContent = dict.layoutHorizontal;
 
-  secMonitors.textContent = dict.secMonitors;
+  if (txtSecMonitors) txtSecMonitors.textContent = dict.secMonitors;
   lblChkCpu.textContent = dict.lblChkCpu;
   lblChkGpu.textContent = dict.lblChkGpu;
   lblChkRam.textContent = dict.lblChkRam;
@@ -353,11 +368,11 @@ function applyLanguage(lang: string) {
   lblChkFps.textContent = dict.lblChkFps;
   lblChkPower.textContent = dict.lblChkPower;
 
-  secSystem.textContent = dict.secSystem;
+  if (txtSecSystem) txtSecSystem.textContent = dict.secSystem;
   lblChkAutostart.textContent = dict.lblChkAutostart;
 
-  btnReset.textContent = dict.btnReset;
-  btnDone.textContent = dict.btnDone;
+  if (txtBtnReset) txtBtnReset.textContent = dict.btnReset;
+  if (txtBtnDone) txtBtnDone.textContent = dict.btnDone;
 
   radarRes.textContent = `${dict.radarRes}${screenWidth} x ${screenHeight}`;
 }
@@ -604,7 +619,11 @@ presetBr.addEventListener('click', async () => {
 
 // Toggle Radar collapsible box
 btnToggleRadar.addEventListener('click', () => {
-  radarSection.classList.toggle('hidden');
+  const isNowHidden = radarSection.classList.toggle('hidden');
+  btnToggleRadar.classList.toggle('open', !isNowHidden);
+  if (!isNowHidden) {
+    updateRadarDisplay();
+  }
 });
 
 // Settings Inputs Listeners

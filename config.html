@@ -10,20 +10,33 @@
     <div class="config-container">
       <!-- Header -->
       <div class="config-header">
-        <h2 id="config-title" class="config-title">⚙️ ตั้งค่า</h2>
+        <h2 id="config-title" class="config-title">
+          <svg class="ui-icon ui-icon-title" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span id="txt-config-title">ตั้งค่า</span>
+        </h2>
         <div class="header-actions">
-          <button id="btn-theme-toggle" class="btn-theme-toggle" title="สลับธีมหน้าตั้งค่า">🌙 ธีมมืด</button>
-          <button id="btn-lang-toggle" class="btn-lang">Language: TH</button>
+          <button id="btn-theme-toggle" class="btn-theme-toggle" title="สลับธีมหน้าตั้งค่า">
+            <span id="icon-theme">
+              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </span>
+            <span id="txt-theme-toggle">ธีมมืด</span>
+          </button>
+          <button id="btn-lang-toggle" class="btn-lang">
+            <svg class="ui-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            <span id="txt-lang-toggle">Language: TH</span>
+          </button>
         </div>
       </div>
 
-      <!-- Radar Trigger / Mini-Map -->
+      <!-- Radar Trigger / Mini-Map (Hidden by default) -->
       <div class="setting-group">
         <button id="btn-toggle-radar" class="btn-action">
-          📐 ตั้งค่าตำแหน่ง
+          <svg class="ui-icon" viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></svg>
+          <span id="txt-toggle-radar">ตั้งค่าตำแหน่ง</span>
+          <svg id="icon-radar-chevron" class="ui-icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </button>
 
-        <div id="radar-section" class="radar-box">
+        <div id="radar-section" class="radar-box hidden">
           <div class="radar-header">
             <span id="radar-res">จอหลัก: 1920 x 1080</span>
             <span id="radar-coords" class="radar-coords">X: 28, Y: 19</span>
@@ -35,17 +48,32 @@
           </div>
 
           <div class="radar-presets">
-            <button id="preset-tl" class="btn-preset">↖ บนซ้าย</button>
-            <button id="preset-tr" class="btn-preset">↗ บนขวา</button>
-            <button id="preset-bl" class="btn-preset">↙ ล่างซ้าย</button>
-            <button id="preset-br" class="btn-preset">↘ ล่างขวา</button>
+            <button id="preset-tl" class="btn-preset">
+              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M17 17 7 7"/><path d="M17 7H7v10"/></svg>
+              <span id="txt-preset-tl">บนซ้าย</span>
+            </button>
+            <button id="preset-tr" class="btn-preset">
+              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+              <span id="txt-preset-tr">บนขวา</span>
+            </button>
+            <button id="preset-bl" class="btn-preset">
+              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M17 7 7 17"/><path d="M17 17H7V7"/></svg>
+              <span id="txt-preset-bl">ล่างซ้าย</span>
+            </button>
+            <button id="preset-br" class="btn-preset">
+              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M7 7l10 10"/><path d="M7 17h10V7"/></svg>
+              <span id="txt-preset-br">ล่างขวา</span>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Theme Switcher -->
       <div class="setting-group">
-        <span id="sec-theme" class="group-title">🎨 พรีเซ็ตสี OSD</span>
+        <span id="sec-theme" class="group-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2Z"/></svg>
+          <span id="txt-sec-theme">พรีเซ็ตสี OSD</span>
+        </span>
         <div class="theme-grid">
           <button type="button" class="btn-theme" data-theme="cyber">
             <span class="theme-dot" style="background: #00ffcc; box-shadow: 0 0 6px #00ffcc;"></span>
@@ -76,7 +104,10 @@
 
       <!-- Colors -->
       <div class="setting-group">
-        <span id="sec-colors" class="group-title">🎨 สี</span>
+        <span id="sec-colors" class="group-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 2v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="M2 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M12 22v-4"/><path d="m19.07 19.07-2.83-2.83"/><path d="M22 12h-4"/><path d="m19.07 4.93-2.83 2.83"/><circle cx="12" cy="12" r="3"/></svg>
+          <span id="txt-sec-colors">สี</span>
+        </span>
         <div class="setting-row">
           <label id="lbl-color-bg" for="color-bg">เลือกสีพื้นหลัง</label>
           <div class="color-picker-wrapper">
@@ -102,7 +133,10 @@
 
       <!-- Sliders -->
       <div class="setting-group">
-        <span id="sec-sliders" class="group-title">🎚️ ความทึบและขนาด</span>
+        <span id="sec-sliders" class="group-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="1" x2="7" y1="14" y2="14"/><line x1="9" x2="15" y1="8" y2="8"/><line x1="17" x2="23" y1="16" y2="16"/></svg>
+          <span id="txt-sec-sliders">ความทึบและขนาด</span>
+        </span>
         <div class="slider-group">
           <div class="slider-label-row">
             <span id="lbl-opacity">ความทึบพื้นหลัง:</span>
@@ -121,7 +155,10 @@
 
       <!-- Appearance & Layout -->
       <div class="setting-group">
-        <span id="sec-layout" class="group-title">🔲 การจัดวาง</span>
+        <span id="sec-layout" class="group-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></svg>
+          <span id="txt-sec-layout">การจัดวาง</span>
+        </span>
         <label class="checkbox-label">
           <input type="checkbox" id="chk-outline" />
           <span id="lbl-chk-outline">เปิดใช้งานขอบข้อความ</span>
@@ -137,7 +174,10 @@
 
       <!-- Hardware Monitors -->
       <div class="setting-group">
-        <span id="sec-monitors" class="group-title">📊 การแสดงผลฮาร์ดแวร์</span>
+        <span id="sec-monitors" class="group-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><path d="M9 9h6v6H9z"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+          <span id="txt-sec-monitors">การแสดงผลฮาร์ดแวร์</span>
+        </span>
         <div class="checkbox-grid">
           <label class="checkbox-label">
             <input type="checkbox" id="chk-cpu" />
@@ -176,7 +216,10 @@
 
       <!-- System -->
       <div class="setting-group">
-        <span id="sec-system" class="group-title">🚀 ระบบ</span>
+        <span id="sec-system" class="group-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></svg>
+          <span id="txt-sec-system">ระบบ</span>
+        </span>
         <label class="checkbox-label">
           <input type="checkbox" id="chk-autostart" />
           <span id="lbl-chk-autostart">เปิดโปรแกรมตอนเปิดเครื่อง</span>
@@ -185,8 +228,14 @@
 
       <!-- Footer -->
       <div class="config-footer">
-        <button id="btn-reset" class="btn-reset">คืนค่าเริ่มต้น</button>
-        <button id="btn-done" class="btn-close">เสร็จสิ้น</button>
+        <button id="btn-reset" class="btn-reset">
+          <svg class="ui-icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <span id="txt-btn-reset">คืนค่าเริ่มต้น</span>
+        </button>
+        <button id="btn-done" class="btn-close">
+          <svg class="ui-icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+          <span id="txt-btn-done">เสร็จสิ้น</span>
+        </button>
       </div>
     </div>
 

@@ -198,6 +198,37 @@ body::-webkit-scrollbar-thumb {
   gap: 6px;
 }
 
+/* Icons */
+.ui-icon {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.ui-icon-title {
+  width: 18px;
+  height: 18px;
+  stroke: var(--accent);
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.btn-action.open .chevron {
+  transform: rotate(180deg);
+}
+
 .btn-preset {
   flex: 1;
   background: var(--bg-btn);
@@ -207,6 +238,23 @@ body::-webkit-scrollbar-thumb {
   padding: 4px 6px;
   font-size: 11px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-reset, .btn-close {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn-preset:hover {
