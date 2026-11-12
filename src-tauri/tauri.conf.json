@@ -1,7 +1,7 @@
 {
   "productName": "md-monitor",
-  "version": "0.1.0",
-  "identifier": "com.mdmonitor.dev",
+  "version": "1.0.0",
+  "identifier": "com.midas.monitor",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",

@@ -1819,7 +1819,7 @@ dependencies = [
 
 [[package]]
 name = "md-monitor"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "libloading 0.8.9",
  "nvml-wrapper",
