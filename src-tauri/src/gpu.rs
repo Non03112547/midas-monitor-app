@@ -41,16 +41,153 @@ struct AdlContext {
     get_temp_od5: Option<unsafe extern "C" fn(i32, i32, *mut ADLTemperature) -> i32>,
 }
 
+#[repr(C)]
+struct PdhFmtCounterValue {
+    c_status: u32,
+    _dummy: u32,
+    double_value: f64,
+}
+
+#[repr(C)]
+struct PdhFmtCounterValueItemW {
+    sz_name: *mut u16,
+    value: PdhFmtCounterValue,
+}
+
+struct UniversalGpuContext {
+    _pdh_lib: Library,
+    query: isize,
+    counter: isize,
+    collect_fn: unsafe extern "system" fn(isize) -> i32,
+    get_array_fn: unsafe extern "system" fn(isize, u32, *mut u32, *mut u32, *mut PdhFmtCounterValueItemW) -> i32,
+    close_fn: unsafe extern "system" fn(isize) -> i32,
+}
+
+impl Drop for UniversalGpuContext {
+    fn drop(&mut self) {
+        unsafe {
+            (self.close_fn)(self.query);
+        }
+    }
+}
+
+fn to_wide(s: &str) -> Vec<u16> {
+    use std::os::windows::ffi::OsStrExt;
+    std::ffi::OsStr::new(s).encode_wide().chain(Some(0)).collect()
+}
+
+impl UniversalGpuContext {
+    fn new() -> Option<Self> {
+        unsafe {
+            let lib = Library::new("pdh.dll").ok()?;
+            let open_fn: Symbol<unsafe extern "system" fn(*const u16, usize, *mut isize) -> i32> = lib.get(b"PdhOpenQueryW\0").ok()?;
+            let open_fn = *open_fn;
+            let add_fn: Symbol<unsafe extern "system" fn(isize, *const u16, usize, *mut isize) -> i32> = lib.get(b"PdhAddEnglishCounterW\0").ok()?;
+            let add_fn = *add_fn;
+            let collect_fn: Symbol<unsafe extern "system" fn(isize) -> i32> = lib.get(b"PdhCollectQueryData\0").ok()?;
+            let collect_fn = *collect_fn;
+            let get_array_fn: Symbol<unsafe extern "system" fn(isize, u32, *mut u32, *mut u32, *mut PdhFmtCounterValueItemW) -> i32> = lib.get(b"PdhGetFormattedCounterArrayW\0").ok()?;
+            let get_array_fn = *get_array_fn;
+            let close_fn: Symbol<unsafe extern "system" fn(isize) -> i32> = lib.get(b"PdhCloseQuery\0").ok()?;
+            let close_fn = *close_fn;
+
+            let mut query = 0isize;
+            if open_fn(std::ptr::null(), 0, &mut query) != 0 {
+                return None;
+            }
+
+            let mut counter = 0isize;
+            // Query 3D engine utilization across all graphics adapters (Intel Arc / Iris Xe / UHD, NVIDIA, AMD)
+            let counter_path = to_wide(r"\GPU Engine(*_engtype_3D)\Utilization Percentage");
+            if add_fn(query, counter_path.as_ptr(), 0, &mut counter) != 0 {
+                close_fn(query);
+                return None;
+            }
+
+            // Prime the query
+            let _ = collect_fn(query);
+
+            Some(Self {
+                _pdh_lib: lib,
+                query,
+                counter,
+                collect_fn,
+                get_array_fn,
+                close_fn,
+            })
+        }
+    }
+
+    fn get_utilization(&self) -> f64 {
+        unsafe {
+            if (self.collect_fn)(self.query) != 0 {
+                return 0.0;
+            }
+
+            let mut buffer_size = 0u32;
+            let mut item_count = 0u32;
+
+            let status = (self.get_array_fn)(
+                self.counter,
+                0x00000200, // PDH_FMT_DOUBLE
+                &mut buffer_size,
+                &mut item_count,
+                std::ptr::null_mut(),
+            );
+
+            // 0x800007D2 = PDH_MORE_DATA
+            if status != 0 && (status as u32) != 0x800007D2 {
+                return 0.0;
+            }
+
+            if buffer_size == 0 {
+                return 0.0;
+            }
+
+            let mut buffer: Vec<u8> = vec![0u8; buffer_size as usize];
+            let status = (self.get_array_fn)(
+                self.counter,
+                0x00000200,
+                &mut buffer_size,
+                &mut item_count,
+                buffer.as_mut_ptr() as *mut PdhFmtCounterValueItemW,
+            );
+
+            if status != 0 || item_count == 0 {
+                return 0.0;
+            }
+
+            let items = buffer.as_ptr() as *const PdhFmtCounterValueItemW;
+            let mut total_util = 0.0;
+
+            for i in 0..item_count as usize {
+                let item = &*items.add(i);
+                if item.value.c_status == 0 && item.value.double_value > 0.0 {
+                    total_util += item.value.double_value;
+                }
+            }
+
+            if total_util > 100.0 {
+                total_util = 100.0;
+            }
+
+            total_util
+        }
+    }
+}
+
 pub struct GpuMonitor {
     nvml: Option<Nvml>,
     adl: Option<AdlContext>,
+    universal: Option<UniversalGpuContext>,
 }
 
 impl GpuMonitor {
     pub fn new() -> Self {
         let nvml = Nvml::init().ok();
         let adl = Self::init_adl();
-        Self { nvml, adl }
+        let universal = UniversalGpuContext::new();
+        Self { nvml, adl, universal }
     }
 
     fn init_adl() -> Option<AdlContext> {
@@ -100,9 +237,7 @@ impl GpuMonitor {
                 let temp = device.temperature(nvml_wrapper::enum_wrappers::device::TemperatureSensor::Gpu)
                     .map(|t| t as f64)
                     .unwrap_or(0.0);
-                if util > 0.0 || temp > 0.0 {
-                    return (util, temp);
-                }
+                return (util, temp);
             }
         }
 
@@ -163,7 +298,15 @@ impl GpuMonitor {
                 }
             }
 
-            return (util, temp);
+            if util > 0.0 || temp > 0.0 {
+                return (util, temp);
+            }
+        }
+
+        // 3. Try Universal WDDM GPU (Intel Arc, Intel Iris Xe, Intel UHD, Snapdragon, etc.)
+        if let Some(univ) = &self.universal {
+            let util = univ.get_utilization();
+            return (util, 0.0);
         }
 
         (0.0, 0.0)

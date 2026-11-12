@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-gold.svg" alt="Version 1.0.0" />
+  <img src="https://img.shields.io/badge/version-1.1.0-gold.svg" alt="Version 1.1.0" />
   <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-blue.svg" alt="Platform Windows" />
   <img src="https://img.shields.io/badge/framework-Tauri%202-orange.svg" alt="Tauri 2" />
   <img src="https://img.shields.io/badge/backend-Rust-black.svg" alt="Rust" />
@@ -27,7 +27,7 @@
 
 ## ✨ คุณสมบัติเด่น (Key Features)
 
-- ⚡ **CPU & GPU Telemetry:** แสดงผลอัตราการทำงาน (%) และอุณหภูมิความร้อน (°C) แบบเรียลไทม์ รองรับทั้งเซนเซอร์ AMD ADL และ Windows Performance Counters
+- ⚡ **Universal Multi-Vendor GPU Telemetry:** แสดงผลอัตราการทำงาน (%) และอุณหภูมิความร้อน (°C) แบบเรียลไทม์ รองรับการ์ดจอทุกค่าย: **NVIDIA** (ผ่าน NVML), **AMD** (ผ่าน ADL) และ **Intel Arc / Iris Xe / UHD** (ผ่าน Windows Universal WDDM / PDH Engine) ครอบคลุม 100% ของการ์ดจอในตลาด
 - 🧠 **RAM Monitoring:** รายงานปริมาณการใช้งานแรมแบบแม่นยำ
 - 💾 **Unified DISK Monitoring:** รวมสัดส่วนพื้นที่จัดเก็บข้อมูลไดรฟ์ระบบและไดรฟ์ข้อมูล (C + D) แบบรวบยอด
 - 🔋 **Hardware Power Consumption (W & Wh):** ตรวจวัดอัตราการกินไฟของฮาร์ดแวร์เป็นวัตต์ (Watt) และคำนวณพลังงานสะสม (Watt-hour) ผ่าน Windows PDH API

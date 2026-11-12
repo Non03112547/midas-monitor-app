@@ -249,13 +249,16 @@ fn main() {
                     let ram_usage = sys_monitor.get_ram_usage();
                     let (net_down_kbps, net_up_kbps) = sys_monitor.get_network_usage();
                     let (disks, disk_summary) = sys_monitor.get_disk_usage();
-                    let (gpu_usage, gpu_temp) = gpu_monitor.get_gpu_stats();
+                    let (gpu_usage, mut gpu_temp) = gpu_monitor.get_gpu_stats();
                     let (power_w, energy_wh) = power_monitor.get_power_stats();
                     let fps = fps_monitor.get_fps();
                     let ping_ms = ping::get_ping("8.8.8.8").await;
 
                     if cpu_temp <= 0.0 && gpu_temp > 0.0 {
                         cpu_temp = gpu_temp;
+                    } else if gpu_temp <= 0.0 && cpu_temp > 0.0 {
+                        // For Intel iGPU / APUs where GPU shares the processor silicon package
+                        gpu_temp = cpu_temp;
                     }
                     
                     let payload = models::TelemetryUpdate {

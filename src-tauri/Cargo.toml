@@ -1,6 +1,6 @@
 [package]
 name = "md-monitor"
-version = "1.0.0"
+version = "1.1.0"
 description = "MD Monitor - Real-time Desktop Hardware & Telemetry OSD"
 authors = ["Midas Team"]
 edition = "2021"
