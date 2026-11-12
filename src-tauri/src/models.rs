@@ -21,6 +21,7 @@ pub struct TelemetryUpdate {
     pub disk_summary: String,
     pub power_w: f64,
     pub energy_wh: f64,
+    pub fps: f64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

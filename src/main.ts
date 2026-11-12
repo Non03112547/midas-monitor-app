@@ -20,6 +20,7 @@ interface TelemetryUpdate {
   disk_summary: string;
   power_w: number;
   energy_wh: number;
+  fps: number;
 }
 
 interface AppConfig {
@@ -157,7 +158,7 @@ listen<TelemetryUpdate>('telemetry-update', (event) => {
     ? `${data.energy_wh.toFixed(1)} Wh` 
     : `${(data.energy_wh / 1000).toFixed(2)} kWh`;
   pwrVal.textContent = `${pwrStr} | ${energyStr}`;
-  fpsVal.textContent = 'N/A';
+  fpsVal.textContent = data.fps > 0 ? `${data.fps.toFixed(0)} FPS` : 'N/A';
   autoFitWindow();
 }).catch(console.error);
 

@@ -15,7 +15,7 @@
   "show_disk": true,
   "show_net": false,
   "show_ping": true,
-  "show_fps": false,
+  "show_fps": true,
   "show_power": true,
   "layout_direction": "vertical",
   "autostart": false,
