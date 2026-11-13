@@ -42,7 +42,7 @@
 
 ### ทางเลือกที่ 1: ติดตั้งผ่านตัวติดตั้งสำเร็จรูป (แนะนำสำหรับผู้ใช้ทั่วไป)
 1. ดาวน์โหลดไฟล์ติดตั้งล่าสุด `MD-Monitor-Setup.exe` ได้จาก:
-   - [Midas Web Showcase Portal](http://localhost:3001/products/md-monitor)
+   - [Midas Web Showcase Portal](https://midas.likezara.com/products/md-monitor)
    - หรือหน้า [GitHub Releases](https://github.com/Non03112547/midas-monitor-app/releases)
 2. ดับเบิลคลิกไฟล์ `MD-Monitor-Setup.exe` แล้วทำตามขั้นตอนการติดตั้งของ NSIS Installer
 3. เมื่อติดตั้งเสร็จสิ้น โปรแกรมจะสร้าง Shortcut บนเดสก์ท็อปและเปิดใช้งานได้ทันที
