@@ -1,5 +1,6 @@
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
+import { check } from '@tauri-apps/plugin-updater';
 
 interface DiskTelemetry {
   name: string;
@@ -183,6 +184,19 @@ async function init() {
 
   applyOsdStyle();
   await invoke('set_ignore_cursor', { ignore: true }).catch(() => {});
+
+  // Auto-check for updates 5 seconds after startup (non-blocking)
+  setTimeout(async () => {
+    try {
+      const update = await check();
+      if (update) {
+        console.info(`[Updater] New version ${update.version} available. Downloading and installing...`);
+        await update.downloadAndInstall();
+      }
+    } catch (err) {
+      console.warn('[Updater] Update check skipped or failed:', err);
+    }
+  }, 5000);
 }
 
 init();

@@ -1,6 +1,6 @@
 {
   "productName": "md-monitor",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "identifier": "com.midas.monitor",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -44,6 +44,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": ["nsis"],
     "icon": [
       "icons/32x32.png",
@@ -60,6 +61,14 @@
         "sidebarImage": null,
         "installMode": "currentUser"
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ4NzY4MEI0OEQ0Q0QxMkIKUldRcjBVeU50SUIyU0lSQUQwbzhtTEl0R0VDVlJyekk5bHVIcWliNTU5ZjFuR2tvVG1XTXBaTGIK",
+      "endpoints": [
+        "https://github.com/Non03112547/midas-monitor-app/releases/latest/download/latest.json"
+      ]
     }
   }
 }

@@ -8,13 +8,34 @@ mod gpu;
 mod ping;
 mod power;
 mod fps;
+mod history;
 
+use std::sync::{Arc, Mutex};
 use tauri::Manager;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tokio::time::{sleep, Duration};
 use tauri::Emitter;
 use models::AppConfig;
+
+struct HistoryState(Arc<Mutex<history::SessionTracker>>);
+
+#[tauri::command]
+fn get_session_history(state: tauri::State<'_, HistoryState>) -> Vec<history::SessionRecord> {
+    match state.0.lock() {
+        Ok(tracker) => tracker.get_all_sessions(),
+        Err(_) => Vec::new(),
+    }
+}
+
+#[tauri::command]
+fn clear_session_history(state: tauri::State<'_, HistoryState>) -> Result<(), String> {
+    let mut tracker = state
+        .0
+        .lock()
+        .map_err(|_| "Failed to lock session history".to_string())?;
+    tracker.clear_past_sessions()
+}
 
 #[tauri::command]
 fn get_config() -> AppConfig {
@@ -135,8 +156,12 @@ fn ensure_single_instance_or_exit() -> std::net::TcpListener {
 
 fn main() {
     let single_instance_listener = ensure_single_instance_or_exit();
+    let history_tracker = Arc::new(Mutex::new(history::SessionTracker::new()));
+    let history_for_loop = Arc::clone(&history_tracker);
 
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
+        .manage(HistoryState(Arc::clone(&history_tracker)))
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             let app_handle_for_ipc = app.handle().clone();
 
@@ -224,6 +249,9 @@ fn main() {
                         }
                     }
                     "exit" => {
+                        if let Ok(tracker) = app.state::<HistoryState>().0.lock() {
+                            let _ = tracker.flush();
+                        }
                         std::process::exit(0);
                     }
                     _ => {}
@@ -242,13 +270,15 @@ fn main() {
                 let mut gpu_monitor = gpu::GpuMonitor::new();
                 let mut power_monitor = power::PowerMonitor::new();
                 let mut fps_monitor = fps::FpsMonitor::new();
-                
+                let mut tick_count: u64 = 0;
+
                 loop {
                     let cpu_usage = sys_monitor.get_cpu_usage();
                     let mut cpu_temp = sys_monitor.get_cpu_temp();
                     let ram_usage = sys_monitor.get_ram_usage();
                     let (net_down_kbps, net_up_kbps) = sys_monitor.get_network_usage();
                     let (disks, disk_summary) = sys_monitor.get_disk_usage();
+                    let disk_usage = disks.first().map(|d| d.usage_percent).unwrap_or(0.0);
                     let (gpu_usage, mut gpu_temp) = gpu_monitor.get_gpu_stats();
                     let (power_w, energy_wh) = power_monitor.get_power_stats();
                     let fps = fps_monitor.get_fps();
@@ -260,7 +290,24 @@ fn main() {
                         // For Intel iGPU / APUs where GPU shares the processor silicon package
                         gpu_temp = cpu_temp;
                     }
-                    
+
+                    tick_count += 1;
+                    if let Ok(mut tracker) = history_for_loop.lock() {
+                        tracker.record_sample(history::SessionSample {
+                            cpu_usage,
+                            cpu_temp,
+                            gpu_usage,
+                            gpu_temp,
+                            ram_usage,
+                            disk_usage,
+                            power_w,
+                            energy_wh,
+                        });
+                        if tick_count == 1 || tick_count % 10 == 0 {
+                            let _ = tracker.flush();
+                        }
+                    }
+
                     let payload = models::TelemetryUpdate {
                         cpu_usage,
                         cpu_temp,
@@ -276,9 +323,9 @@ fn main() {
                         energy_wh,
                         fps,
                     };
-                    
+
                     let _ = app_handle.emit("telemetry-update", payload);
-                    
+
                     sleep(Duration::from_secs(1)).await;
                 }
             });
@@ -297,8 +344,18 @@ fn main() {
             get_window_position,
             set_window_size,
             set_autostart,
-            close_config_window
+            close_config_window,
+            get_session_history,
+            clear_session_history
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| {
+        if let tauri::RunEvent::Exit = event {
+            if let Ok(tracker) = app_handle.state::<HistoryState>().0.lock() {
+                let _ = tracker.flush();
+            }
+        }
+    });
 }

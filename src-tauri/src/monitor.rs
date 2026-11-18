@@ -1,25 +1,81 @@
-use sysinfo::{System, Networks, Disks, Components};
+use sysinfo::{System, Networks, Components};
 use std::time::Instant;
+use windows::core::w;
+use windows::Win32::System::Performance::{
+    PdhAddEnglishCounterW, PdhCloseQuery, PdhCollectQueryData, PdhGetFormattedCounterValue,
+    PdhOpenQueryW, PDH_FMT_COUNTERVALUE, PDH_FMT_DOUBLE,
+};
 use crate::models::DiskTelemetry;
 
 pub struct SysMonitor {
     sys: System,
     networks: Networks,
-    disks: Disks,
     components: Components,
     last_check: Instant,
+    pdh_query: Option<isize>,
+    pdh_counter: Option<isize>,
+    pdh_is_idle: bool,
+}
+
+impl Drop for SysMonitor {
+    fn drop(&mut self) {
+        if let Some(query) = self.pdh_query.take() {
+            unsafe {
+                let _ = PdhCloseQuery(query);
+            }
+        }
+    }
 }
 
 impl SysMonitor {
+    fn init_disk_pdh() -> (Option<isize>, Option<isize>, bool) {
+        unsafe {
+            let mut query: isize = 0;
+            if PdhOpenQueryW(None, 0, &mut query) != 0 {
+                return (None, None, true);
+            }
+
+            let mut counter: isize = 0;
+            let mut is_idle = true;
+
+            if PdhAddEnglishCounterW(
+                query,
+                w!("\\PhysicalDisk(_Total)\\% Idle Time"),
+                0,
+                &mut counter,
+            ) != 0
+            {
+                is_idle = false;
+                if PdhAddEnglishCounterW(
+                    query,
+                    w!("\\PhysicalDisk(_Total)\\% Disk Time"),
+                    0,
+                    &mut counter,
+                ) != 0
+                {
+                    let _ = PdhCloseQuery(query);
+                    return (None, None, true);
+                }
+            }
+
+            // Initial baseline sample required by PDH rate/percentage counters
+            let _ = PdhCollectQueryData(query);
+            (Some(query), Some(counter), is_idle)
+        }
+    }
+
     pub fn new() -> Self {
         let mut sys = System::new_all();
         sys.refresh_all();
+        let (pdh_query, pdh_counter, pdh_is_idle) = Self::init_disk_pdh();
         Self {
             sys,
             networks: Networks::new_with_refreshed_list(),
-            disks: Disks::new_with_refreshed_list(),
             components: Components::new_with_refreshed_list(),
             last_check: Instant::now(),
+            pdh_query,
+            pdh_counter,
+            pdh_is_idle,
         }
     }
 
@@ -84,59 +140,37 @@ impl SysMonitor {
     }
 
     pub fn get_disk_usage(&mut self) -> (Vec<DiskTelemetry>, String) {
-        self.disks.refresh();
-
-        let mut disks_vec = Vec::new();
-        let mut summary_parts = Vec::new();
-
-        let mut cd_total: u64 = 0;
-        let mut cd_available: u64 = 0;
-        let mut cd_found = false;
-        let mut cd_labels = Vec::new();
-
-        for disk in &self.disks {
-            let total = disk.total_space();
-            let available = disk.available_space();
-            if total > 0 {
-                let used = total.saturating_sub(available);
-                let usage_percent = (used as f64 / total as f64) * 100.0;
-                let mount = disk.mount_point().to_string_lossy().to_string();
-                let name = disk.name().to_string_lossy().to_string();
-                
-                // Format drive letter (e.g., "C:" from "C:\\" or "C:")
-                let drive_label = mount.trim_end_matches(['\\', '/']).to_uppercase();
-                let display_name = if drive_label.is_empty() { name.clone() } else { drive_label.clone() };
-
-                disks_vec.push(DiskTelemetry {
-                    name,
-                    mount_point: mount,
-                    usage_percent,
-                });
-
-                if drive_label.starts_with("C:") || drive_label.starts_with("D:") {
-                    cd_total += total;
-                    cd_available += available;
-                    cd_found = true;
-                    if !cd_labels.contains(&drive_label) {
-                        cd_labels.push(drive_label);
+        let active_percent = match (self.pdh_query, self.pdh_counter) {
+            (Some(query), Some(counter)) => unsafe {
+                if PdhCollectQueryData(query) == 0 {
+                    let mut value = PDH_FMT_COUNTERVALUE::default();
+                    if PdhGetFormattedCounterValue(counter, PDH_FMT_DOUBLE, None, &mut value) == 0 {
+                        let raw = value.Anonymous.doubleValue;
+                        if raw.is_finite() {
+                            if self.pdh_is_idle {
+                                (100.0 - raw).clamp(0.0, 100.0)
+                            } else {
+                                raw.clamp(0.0, 100.0)
+                            }
+                        } else {
+                            0.0
+                        }
+                    } else {
+                        0.0
                     }
                 } else {
-                    summary_parts.push(format!("{} {:.0}%", display_name, usage_percent));
+                    0.0
                 }
-            }
-        }
-
-        if cd_found && cd_total > 0 {
-            let cd_used = cd_total.saturating_sub(cd_available);
-            let cd_percent = (cd_used as f64 / cd_total as f64) * 100.0;
-            summary_parts.insert(0, format!("{:.0}%", cd_percent));
-        }
-
-        let summary = if summary_parts.is_empty() {
-            "N/A".to_string()
-        } else {
-            summary_parts.join(" | ")
+            },
+            _ => 0.0,
         };
+
+        let disks_vec = vec![DiskTelemetry {
+            name: "PhysicalDisk(_Total)".to_string(),
+            mount_point: "_Total".to_string(),
+            usage_percent: active_percent,
+        }];
+        let summary = format!("{:.0}%", active_percent);
 
         (disks_vec, summary)
     }
@@ -149,8 +183,11 @@ mod tests {
     #[test]
     fn test_disk_usage() {
         let mut sm = SysMonitor::new();
+        std::thread::sleep(std::time::Duration::from_millis(100));
         let (disks, summary) = sm.get_disk_usage();
         println!("Test Disks count: {}, Summary: {}", disks.len(), summary);
-        assert!(!summary.is_empty());
+        assert_eq!(disks.len(), 1);
+        assert!(summary.ends_with('%'));
+        assert!((0.0..=100.0).contains(&disks[0].usage_percent));
     }
 }
