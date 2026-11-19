@@ -19,6 +19,7 @@ use tauri::Emitter;
 use models::AppConfig;
 
 struct HistoryState(Arc<Mutex<history::SessionTracker>>);
+struct DailyHistoryState(Arc<Mutex<history::DailyTracker>>);
 
 #[tauri::command]
 fn get_session_history(state: tauri::State<'_, HistoryState>) -> Vec<history::SessionRecord> {
@@ -35,6 +36,49 @@ fn clear_session_history(state: tauri::State<'_, HistoryState>) -> Result<(), St
         .lock()
         .map_err(|_| "Failed to lock session history".to_string())?;
     tracker.clear_past_sessions()
+}
+
+#[tauri::command]
+fn get_daily_history(state: tauri::State<'_, DailyHistoryState>) -> history::DailyHistoryData {
+    match state.0.lock() {
+        Ok(tracker) => tracker.get_daily_history(),
+        Err(_) => history::DailyHistoryData::default(),
+    }
+}
+
+#[tauri::command]
+fn clear_daily_history(state: tauri::State<'_, DailyHistoryState>) -> Result<(), String> {
+    let mut tracker = state
+        .0
+        .lock()
+        .map_err(|_| "Failed to lock daily history".to_string())?;
+    tracker.clear()
+}
+
+#[tauri::command]
+fn open_history_window(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("history") {
+        let _ = win.show();
+        let _ = win.unminimize();
+        let _ = win.set_focus();
+        return Ok(());
+    }
+
+    let win = tauri::WebviewWindowBuilder::new(
+        &app,
+        "history",
+        tauri::WebviewUrl::App("history.html".into()),
+    )
+    .title("ประวัติการใช้งาน - MD Monitor")
+    .inner_size(760.0, 620.0)
+    .min_inner_size(560.0, 440.0)
+    .resizable(true)
+    .center()
+    .build()
+    .map_err(|e| format!("Failed to open history window: {}", e))?;
+
+    let _ = win.set_focus();
+    Ok(())
 }
 
 #[tauri::command]
@@ -158,9 +202,12 @@ fn main() {
     let single_instance_listener = ensure_single_instance_or_exit();
     let history_tracker = Arc::new(Mutex::new(history::SessionTracker::new()));
     let history_for_loop = Arc::clone(&history_tracker);
+    let daily_tracker = Arc::new(Mutex::new(history::DailyTracker::new()));
+    let daily_for_loop = Arc::clone(&daily_tracker);
 
     let app = tauri::Builder::default()
         .manage(HistoryState(Arc::clone(&history_tracker)))
+        .manage(DailyHistoryState(Arc::clone(&daily_tracker)))
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             let app_handle_for_ipc = app.handle().clone();
@@ -252,6 +299,9 @@ fn main() {
                         if let Ok(tracker) = app.state::<HistoryState>().0.lock() {
                             let _ = tracker.flush();
                         }
+                        if let Ok(daily) = app.state::<DailyHistoryState>().0.lock() {
+                            let _ = daily.flush();
+                        }
                         std::process::exit(0);
                     }
                     _ => {}
@@ -292,19 +342,26 @@ fn main() {
                     }
 
                     tick_count += 1;
+                    let sample = history::SessionSample {
+                        cpu_usage,
+                        cpu_temp,
+                        gpu_usage,
+                        gpu_temp,
+                        ram_usage,
+                        disk_usage,
+                        power_w,
+                        energy_wh,
+                    };
                     if let Ok(mut tracker) = history_for_loop.lock() {
-                        tracker.record_sample(history::SessionSample {
-                            cpu_usage,
-                            cpu_temp,
-                            gpu_usage,
-                            gpu_temp,
-                            ram_usage,
-                            disk_usage,
-                            power_w,
-                            energy_wh,
-                        });
+                        tracker.record_sample(sample);
                         if tick_count == 1 || tick_count % 10 == 0 {
                             let _ = tracker.flush();
+                        }
+                    }
+                    if let Ok(mut daily) = daily_for_loop.lock() {
+                        daily.record_sample(sample);
+                        if tick_count == 1 || tick_count % 30 == 0 {
+                            let _ = daily.flush();
                         }
                     }
 
@@ -346,7 +403,10 @@ fn main() {
             set_autostart,
             close_config_window,
             get_session_history,
-            clear_session_history
+            clear_session_history,
+            get_daily_history,
+            clear_daily_history,
+            open_history_window
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

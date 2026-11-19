@@ -226,43 +226,13 @@
         </label>
       </div>
 
-      <!-- Session History (Collapsible) -->
+      <!-- Usage History (Opens Separate Window) -->
       <div class="setting-group">
         <button type="button" id="btn-toggle-history" class="btn-action btn-history-toggle">
           <svg class="ui-icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-          <span id="txt-toggle-history">ประวัติการทำงาน (Session History)</span>
-          <svg id="icon-history-chevron" class="ui-icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          <span id="txt-toggle-history">ประวัติการใช้งานรายวัน (Usage History)</span>
+          <svg class="ui-icon chevron" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </button>
-
-        <div id="history-section" class="history-box hidden">
-          <div class="history-summary-grid">
-            <div class="history-stat-card">
-              <span id="lbl-hist-total-sessions" class="history-stat-label">จำนวนครั้งที่เปิด</span>
-              <span id="val-hist-total-sessions" class="history-stat-value">0</span>
-            </div>
-            <div class="history-stat-card">
-              <span id="lbl-hist-total-time" class="history-stat-label">เวลารวมทั้งหมด</span>
-              <span id="val-hist-total-time" class="history-stat-value">0 วินาที</span>
-            </div>
-            <div class="history-stat-card">
-              <span id="lbl-hist-total-energy" class="history-stat-label">กินไฟสะสมรวม</span>
-              <span id="val-hist-total-energy" class="history-stat-value">0.0 Wh</span>
-            </div>
-          </div>
-
-          <div class="history-toolbar">
-            <button type="button" id="btn-history-refresh" class="btn-history-ctrl">
-              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-              <span id="txt-btn-history-refresh">รีเฟรช</span>
-            </button>
-            <button type="button" id="btn-history-clear" class="btn-history-ctrl btn-history-danger">
-              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-              <span id="txt-btn-history-clear">ล้างประวัติ</span>
-            </button>
-          </div>
-
-          <div id="history-list" class="history-list"></div>
-        </div>
       </div>
 
       <!-- Footer -->

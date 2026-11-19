@@ -26,22 +26,6 @@ interface AppConfig {
   config_theme?: string;
 }
 
-interface SessionRecord {
-  id: string;
-  start_timestamp: number;
-  end_timestamp: number;
-  duration_sec: number;
-  sample_count: number;
-  avg_cpu_usage: number;
-  avg_cpu_temp: number;
-  avg_gpu_usage: number;
-  avg_gpu_temp: number;
-  avg_ram_usage: number;
-  avg_disk_usage: number;
-  avg_power_w: number;
-  total_energy_wh: number;
-}
-
 // Translations matching Python monitor.pyw
 const i18n: Record<string, Record<string, string>> = {
   th: {
@@ -79,7 +63,7 @@ const i18n: Record<string, Record<string, string>> = {
     lblChkPower: "แสดงการใช้ไฟ (Power)",
     secSystem: "ระบบ",
     lblChkAutostart: "เปิดโปรแกรมตอนเปิดเครื่อง",
-    btnToggleHistory: "ประวัติการทำงาน (Session History)",
+    btnToggleHistory: "ประวัติการใช้งานรายวัน (Usage History)",
     histTotalSessions: "จำนวนครั้งที่เปิด",
     histTotalTime: "เวลารวมทั้งหมด",
     histTotalEnergy: "กินไฟสะสมรวม",
@@ -128,7 +112,7 @@ const i18n: Record<string, Record<string, string>> = {
     lblChkPower: "Show Power / Energy",
     secSystem: "System",
     lblChkAutostart: "Run on Startup",
-    btnToggleHistory: "Session History",
+    btnToggleHistory: "Daily Usage History",
     histTotalSessions: "Total Sessions",
     histTotalTime: "Total Uptime",
     histTotalEnergy: "Total Energy",
@@ -290,20 +274,6 @@ const lblChkAutostart = document.getElementById('lbl-chk-autostart')!;
 
 const btnToggleHistory = document.getElementById('btn-toggle-history')!;
 const txtToggleHistory = document.getElementById('txt-toggle-history')!;
-const historySection = document.getElementById('history-section')!;
-const lblHistTotalSessions = document.getElementById('lbl-hist-total-sessions')!;
-const valHistTotalSessions = document.getElementById('val-hist-total-sessions')!;
-const lblHistTotalTime = document.getElementById('lbl-hist-total-time')!;
-const valHistTotalTime = document.getElementById('val-hist-total-time')!;
-const lblHistTotalEnergy = document.getElementById('lbl-hist-total-energy')!;
-const valHistTotalEnergy = document.getElementById('val-hist-total-energy')!;
-const btnHistoryRefresh = document.getElementById('btn-history-refresh')!;
-const txtBtnHistoryRefresh = document.getElementById('txt-btn-history-refresh')!;
-const btnHistoryClear = document.getElementById('btn-history-clear')!;
-const txtBtnHistoryClear = document.getElementById('txt-btn-history-clear')!;
-const historyList = document.getElementById('history-list')!;
-
-let cachedSessions: SessionRecord[] = [];
 
 const btnReset = document.getElementById('btn-reset')!;
 const txtBtnReset = document.getElementById('txt-btn-reset')!;
@@ -427,12 +397,6 @@ function applyLanguage(lang: string) {
   lblChkAutostart.textContent = dict.lblChkAutostart;
 
   if (txtToggleHistory) txtToggleHistory.textContent = dict.btnToggleHistory;
-  if (lblHistTotalSessions) lblHistTotalSessions.textContent = dict.histTotalSessions;
-  if (lblHistTotalTime) lblHistTotalTime.textContent = dict.histTotalTime;
-  if (lblHistTotalEnergy) lblHistTotalEnergy.textContent = dict.histTotalEnergy;
-  if (txtBtnHistoryRefresh) txtBtnHistoryRefresh.textContent = dict.histRefresh;
-  if (txtBtnHistoryClear) txtBtnHistoryClear.textContent = dict.histClear;
-  renderSessionHistory();
 
   if (txtBtnReset) txtBtnReset.textContent = dict.btnReset;
   if (txtBtnDone) txtBtnDone.textContent = dict.btnDone;
@@ -832,127 +796,11 @@ btnDone.addEventListener('click', async () => {
   }
 });
 
-function formatDuration(totalSec: number, lang: string): string {
-  const dict = i18n[lang] || i18n.th;
-  const hrs = Math.floor(totalSec / 3600);
-  const mins = Math.floor((totalSec % 3600) / 60);
-  const secs = Math.floor(totalSec % 60);
-  if (hrs > 0) {
-    return `${hrs} ${dict.histUnitHr} ${mins} ${dict.histUnitMin}`;
-  }
-  if (mins > 0) {
-    return `${mins} ${dict.histUnitMin} ${secs} ${dict.histUnitSec}`;
-  }
-  return `${secs} ${dict.histUnitSec}`;
-}
-
-function formatEnergy(wh: number): string {
-  if (wh >= 1000) {
-    return `${(wh / 1000).toFixed(2)} kWh`;
-  }
-  return `${wh.toFixed(1)} Wh`;
-}
-
-function formatTimestamp(unixSec: number, lang: string): string {
-  const d = new Date(unixSec * 1000);
-  const locale = lang === 'en' ? 'en-US' : 'th-TH';
-  return d.toLocaleString(locale, {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-}
-
-function renderSessionHistory() {
-  if (!historyList) return;
-  const lang = config.language || 'th';
-  const dict = i18n[lang] || i18n.th;
-
-  const totalSessions = cachedSessions.length;
-  const totalSec = cachedSessions.reduce((acc, s) => acc + (s.duration_sec || 0), 0);
-  const totalWh = cachedSessions.reduce((acc, s) => acc + (s.total_energy_wh || 0), 0);
-
-  if (valHistTotalSessions) valHistTotalSessions.textContent = `${totalSessions}`;
-  if (valHistTotalTime) valHistTotalTime.textContent = formatDuration(totalSec, lang);
-  if (valHistTotalEnergy) valHistTotalEnergy.textContent = formatEnergy(totalWh);
-
-  historyList.innerHTML = '';
-  if (cachedSessions.length === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'history-empty';
-    empty.textContent = dict.histEmpty;
-    historyList.appendChild(empty);
-    return;
-  }
-
-  cachedSessions.forEach((s, idx) => {
-    const isCurrent = idx === 0;
-    const item = document.createElement('div');
-    item.className = `history-item${isCurrent ? ' active-session' : ''}`;
-
-    const startStr = formatTimestamp(s.start_timestamp, lang);
-    const endStr = isCurrent ? dict.histRunning : formatTimestamp(s.end_timestamp, lang);
-    const durStr = formatDuration(s.duration_sec, lang);
-    const cpuTempStr = s.avg_cpu_temp > 0 ? `${s.avg_cpu_temp.toFixed(1)}°C` : '--';
-    const gpuTempStr = s.avg_gpu_temp > 0 ? `${s.avg_gpu_temp.toFixed(1)}°C` : '--';
-
-    item.innerHTML = `
-      <div class="history-item-header">
-        <span class="history-item-time">${startStr} — ${endStr}</span>
-        <span class="history-item-badge">${durStr}</span>
-      </div>
-      <div class="history-item-metrics">
-        <div class="history-metric">
-          <span class="history-metric-label">CPU</span>
-          <span class="history-metric-val">${s.avg_cpu_usage.toFixed(1)}% (${cpuTempStr})</span>
-        </div>
-        <div class="history-metric">
-          <span class="history-metric-label">GPU</span>
-          <span class="history-metric-val">${s.avg_gpu_usage.toFixed(1)}% (${gpuTempStr})</span>
-        </div>
-        <div class="history-metric">
-          <span class="history-metric-label">RAM / Disk</span>
-          <span class="history-metric-val">${s.avg_ram_usage.toFixed(0)}% / ${s.avg_disk_usage.toFixed(0)}%</span>
-        </div>
-        <div class="history-metric">
-          <span class="history-metric-label">Power / Energy</span>
-          <span class="history-metric-val">${s.avg_power_w.toFixed(1)}W · ${formatEnergy(s.total_energy_wh)}</span>
-        </div>
-      </div>
-    `;
-    historyList.appendChild(item);
-  });
-}
-
-async function loadSessionHistory() {
+btnToggleHistory.addEventListener('click', async () => {
   try {
-    cachedSessions = await invoke<SessionRecord[]>('get_session_history');
-    renderSessionHistory();
+    await invoke('open_history_window');
   } catch (err) {
-    console.error('Failed to load session history:', err);
-  }
-}
-
-btnToggleHistory.addEventListener('click', () => {
-  const isHidden = historySection.classList.toggle('hidden');
-  btnToggleHistory.classList.toggle('open', !isHidden);
-  if (!isHidden) {
-    loadSessionHistory();
-  }
-});
-
-btnHistoryRefresh.addEventListener('click', () => {
-  loadSessionHistory();
-});
-
-btnHistoryClear.addEventListener('click', async () => {
-  try {
-    await invoke('clear_session_history');
-    await loadSessionHistory();
-  } catch (err) {
-    console.error('Failed to clear session history:', err);
+    console.error('Failed to open history window:', err);
   }
 });
 

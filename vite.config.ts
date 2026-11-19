@@ -16,6 +16,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         config: resolve(__dirname, "config.html"),
+        history: resolve(__dirname, "history.html"),
       },
     },
   },
