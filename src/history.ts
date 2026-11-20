@@ -236,6 +236,10 @@ listen<AppConfig>('config-changed', (event) => {
   }
 }).catch(console.error);
 
+listen('history-refresh', () => {
+  void loadDailyHistory();
+}).catch(console.error);
+
 async function init() {
   try {
     const cfg = await invoke<AppConfig>('get_config');

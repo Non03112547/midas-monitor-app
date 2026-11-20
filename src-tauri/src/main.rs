@@ -20,6 +20,7 @@ use models::AppConfig;
 
 struct HistoryState(Arc<Mutex<history::SessionTracker>>);
 struct DailyHistoryState(Arc<Mutex<history::DailyTracker>>);
+struct HistoryWindowLock(tokio::sync::Mutex<()>);
 
 #[tauri::command]
 fn get_session_history(state: tauri::State<'_, HistoryState>) -> Vec<history::SessionRecord> {
@@ -56,11 +57,17 @@ fn clear_daily_history(state: tauri::State<'_, DailyHistoryState>) -> Result<(),
 }
 
 #[tauri::command]
-fn open_history_window(app: tauri::AppHandle) -> Result<(), String> {
+async fn open_history_window(
+    app: tauri::AppHandle,
+    lock: tauri::State<'_, HistoryWindowLock>,
+) -> Result<(), String> {
+    let _guard = lock.0.lock().await;
+
     if let Some(win) = app.get_webview_window("history") {
-        let _ = win.show();
         let _ = win.unminimize();
+        let _ = win.show();
         let _ = win.set_focus();
+        let _ = win.emit("history-refresh", ());
         return Ok(());
     }
 
@@ -73,10 +80,13 @@ fn open_history_window(app: tauri::AppHandle) -> Result<(), String> {
     .inner_size(760.0, 620.0)
     .min_inner_size(560.0, 440.0)
     .resizable(true)
+    .always_on_top(true)
+    .skip_taskbar(false)
     .center()
     .build()
     .map_err(|e| format!("Failed to open history window: {}", e))?;
 
+    let _ = win.show();
     let _ = win.set_focus();
     Ok(())
 }
@@ -208,6 +218,7 @@ fn main() {
     let app = tauri::Builder::default()
         .manage(HistoryState(Arc::clone(&history_tracker)))
         .manage(DailyHistoryState(Arc::clone(&daily_tracker)))
+        .manage(HistoryWindowLock(tokio::sync::Mutex::new(())))
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             let app_handle_for_ipc = app.handle().clone();

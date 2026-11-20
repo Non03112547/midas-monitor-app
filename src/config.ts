@@ -796,11 +796,18 @@ btnDone.addEventListener('click', async () => {
   }
 });
 
+let isOpeningHistory = false;
 btnToggleHistory.addEventListener('click', async () => {
+  if (isOpeningHistory) return;
+  isOpeningHistory = true;
+  btnToggleHistory.setAttribute('disabled', 'true');
   try {
     await invoke('open_history_window');
   } catch (err) {
     console.error('Failed to open history window:', err);
+  } finally {
+    isOpeningHistory = false;
+    btnToggleHistory.removeAttribute('disabled');
   }
 });
 
